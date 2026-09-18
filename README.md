@@ -2,6 +2,10 @@
 
 Sistema corporativo completo e moderno para gestão de marmorarias, medições técnicas de obras, cálculo de orçamentos com fator de perda, controle de chão de fábrica via Kanban, emissão de propostas comerciais em **PDF A4**, disparo direto via **WhatsApp** e fluxo de caixa financeiro com persistência local em **SQLite**.
 
+[![Download Android APK](https://img.shields.io/badge/Download-Android%20APK%20(v1.0.0)-34D399?style=for-the-badge&logo=android&logoColor=white)](https://github.com/duducoBS/erp-marmoraria/releases/download/v1.0.0/ERPMarmoraria.apk)
+[![Download Windows Installer](https://img.shields.io/badge/Download-Instalador%20Windows%20(v1.0.0)-3B82F6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/duducoBS/erp-marmoraria/releases/download/v1.0.0/Instalador-ERP-Marmoraria-Windows.zip)
+[![Release Oficial](https://img.shields.io/badge/GitHub-Releases%20v1.0.0-10B981?style=for-the-badge&logo=github&logoColor=white)](https://github.com/duducoBS/erp-marmoraria/releases/tag/v1.0.0)
+
 ---
 
 ## 🌟 Funcionalidades Implementadas
