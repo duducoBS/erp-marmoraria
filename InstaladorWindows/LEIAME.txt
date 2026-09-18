@@ -1,0 +1,22 @@
+========================================================================
+  ERP MARMORARIA - SISTEMA DE GESTÃO INTEGRADO (WINDOWS DESKTOP)
+========================================================================
+
+COMO INSTALAR:
+1. Dê um duplo clique no arquivo "Instalar.bat"
+2. O assistente gráfico de instalação será aberto.
+3. Escolha a pasta de destino (ou mantenha o padrão) e clique em "Instalar Agora".
+4. O instalador criará automaticamente:
+   - Atalho na sua Área de Trabalho (ERP Marmoraria)
+   - Atalho no seu Menu Iniciar
+   - Entrada no Painel de Controle para desinstalação simplificada
+
+COMO USAR SEM INSTALAR (PORTÁTIL):
+- Você também pode executar diretamente o arquivo "ERPMarmoraria.exe" nesta pasta.
+
+REQUISITOS:
+- Windows 10 ou Windows 11 (64-bit)
+- Microsoft Edge WebView2 Runtime (já presente nativamente no Windows 10 e 11)
+
+DESINSTALAÇÃO:
+- Acesse "Configurações > Aplicativos > Aplicativos Instalados" e selecione "ERP Marmoraria" para desinstalar, ou execute "uninstall.bat" na pasta instalada.

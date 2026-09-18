@@ -12,16 +12,22 @@
 .swiftpm/
 migrate_working_dir/
 
+# Executables, Packages and Build Artifacts (distributed via GitHub Releases)
+*.apk
+*.zip
+*.exe
+windows_desktop/bin/
+windows_desktop/obj/
+windows_desktop/publish/
+InstaladorWindows/ERPMarmoraria.exe
+InstaladorWindows/www/
+test_vs/
+
 # IntelliJ related
 *.iml
 *.ipr
 *.iws
 .idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/

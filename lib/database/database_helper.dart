@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'initial_data.dart';
 
 class DatabaseHelper {
@@ -17,6 +19,19 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB(String filePath) async {
+    // Inicialização do SQLite na Web / WebView2
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+      return await databaseFactory.openDatabase(
+        filePath,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _createDB,
+          onConfigure: _onConfigure,
+        ),
+      );
+    }
+
     // Inicialização do SQLite FFI em plataformas desktop (Windows / Linux)
     if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();

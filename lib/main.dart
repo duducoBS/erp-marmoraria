@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -13,8 +14,8 @@ import 'views/layout/main_layout.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicialização FFI para SQLite no Windows e Linux
-  if (Platform.isWindows || Platform.isLinux) {
+  // Inicialização FFI para SQLite no Windows e Linux nativo
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
