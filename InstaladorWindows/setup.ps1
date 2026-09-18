@@ -163,6 +163,16 @@ $btnInstall.Add_Click({
         $exeSource = Join-Path $scriptDir "ERPMarmoraria.exe"
         Copy-Item $exeSource (Join-Path $target "ERPMarmoraria.exe") -Force
 
+        $dllSource = Join-Path $scriptDir "WebView2Loader.dll"
+        if (Test-Path $dllSource) {
+            Copy-Item $dllSource (Join-Path $target "WebView2Loader.dll") -Force
+        }
+
+        $runtimesSource = Join-Path $scriptDir "runtimes"
+        if (Test-Path $runtimesSource) {
+            Copy-Item $runtimesSource (Join-Path $target "runtimes") -Recurse -Force
+        }
+
         $icoSource = Join-Path $scriptDir "appicon.ico"
         if (Test-Path $icoSource) {
             Copy-Item $icoSource (Join-Path $target "appicon.ico") -Force

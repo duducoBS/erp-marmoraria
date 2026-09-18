@@ -12,6 +12,7 @@
     <Authors>ERP Marmoraria</Authors>
     <Product>ERP Marmoraria</Product>
     <Description>Sistema de Gestao Completo para Marmorarias e Granitos</Description>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
