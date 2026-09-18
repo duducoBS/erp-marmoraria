@@ -138,11 +138,20 @@ class _DashboardViewState extends State<DashboardView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.architecture_rounded, color: AppColors.secondary, size: 28),
-                    SizedBox(width: 10),
-                    Text(
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.all(3),
+                      child: Image.asset('assets/images/logo_edu.png', fit: BoxFit.contain),
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
                       'ERP Marmoraria',
                       style: TextStyle(
                         color: Colors.white,

@@ -15,7 +15,7 @@ class AppColors {
   static const Color danger = Color(0xFFDC2626); // Vermelho Coral (Recusado / Vencido)
   static const Color info = Color(0xFF2563EB); // Azul Informativo
 
-  // Neutras e Superfícies
+  // Neutras e Superfícies (Modo Claro)
   static const Color background = Color(0xFFF8FAFC); // Fundo cinza suave tipo mármore claro
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFF1F5F9);
@@ -23,6 +23,15 @@ class AppColors {
   static const Color textPrimary = Color(0xFF0F172A);
   static const Color textSecondary = Color(0xFF64748B);
   static const Color textMuted = Color(0xFF94A3B8);
+
+  // Neutras e Superfícies (Modo Escuro)
+  static const Color darkBackground = Color(0xFF0F172A); // Slate 900
+  static const Color darkSurface = Color(0xFF1E293B); // Slate 800
+  static const Color darkSurfaceVariant = Color(0xFF334155); // Slate 700
+  static const Color darkBorder = Color(0xFF334155); // Slate 700
+  static const Color darkTextPrimary = Color(0xFFF8FAFC); // Slate 50
+  static const Color darkTextSecondary = Color(0xFF94A3B8); // Slate 400
+  static const Color darkTextMuted = Color(0xFF64748B); // Slate 500
 
   // Cores para as fases do Kanban
   static const Color kanbanMedicao = Color(0xFF6366F1); // Indigo

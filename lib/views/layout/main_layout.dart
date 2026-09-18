@@ -47,7 +47,7 @@ class MainLayout extends StatelessWidget {
             _buildSidebar(context, appProvider),
             Expanded(
               child: Container(
-                color: AppColors.background,
+                color: Theme.of(context).scaffoldBackgroundColor,
                 child: _pages[appProvider.currentIndex],
               ),
             ),
@@ -61,10 +61,12 @@ class MainLayout extends StatelessWidget {
           title: Text(_navItems[appProvider.currentIndex].title),
           actions: [
             IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                // Trigger refresh if needed
-              },
+              icon: Icon(
+                appProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: appProvider.isDarkMode ? Colors.amber : Colors.white,
+              ),
+              tooltip: appProvider.isDarkMode ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro',
+              onPressed: () => appProvider.toggleTheme(),
             ),
           ],
         ),
@@ -103,19 +105,38 @@ class MainLayout extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Top Brand Header
+          // Top Brand Header com Logo Edu
           Container(
             height: 70,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             alignment: Alignment.centerLeft,
             decoration: const BoxDecoration(
               border: Border(bottom: BorderSide(color: AppColors.primaryLight, width: 1)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.architecture_rounded, color: AppColors.secondary, size: 30),
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(3),
+                  child: Image.asset(
+                    'assets/images/logo_edu.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
                 if (expanded) ...[
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   const Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -126,15 +147,15 @@ class MainLayout extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 15,
                             letterSpacing: 0.5,
                           ),
                         ),
                         Text(
-                          'Mármores & Granitos',
+                          'Edu Mármores & Granitos',
                           style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 11,
+                            color: Colors.white70,
+                            fontSize: 10.5,
                           ),
                         ),
                       ],
@@ -203,9 +224,57 @@ class MainLayout extends StatelessWidget {
             ),
           ),
 
+          // Alternador de Tema Escuro / Claro (Sidebar)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: const BoxDecoration(
+              border: Border(top: BorderSide(color: AppColors.primaryLight, width: 1)),
+            ),
+            child: Row(
+              mainAxisAlignment: expanded ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
+              children: [
+                if (expanded) ...[
+                  Row(
+                    children: [
+                      Icon(
+                        appProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                        color: appProvider.isDarkMode ? Colors.amber : Colors.amber.shade200,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        appProvider.isDarkMode ? 'Modo Escuro' : 'Modo Claro',
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                  Transform.scale(
+                    scale: 0.8,
+                    child: Switch(
+                      value: appProvider.isDarkMode,
+                      onChanged: (_) => appProvider.toggleTheme(),
+                      activeThumbColor: Colors.amber,
+                      activeTrackColor: Colors.amber.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ] else ...[
+                  IconButton(
+                    icon: Icon(
+                      appProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                      color: appProvider.isDarkMode ? Colors.amber : Colors.amber.shade200,
+                      size: 20,
+                    ),
+                    tooltip: appProvider.isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro',
+                    onPressed: () => appProvider.toggleTheme(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
           // Rodapé do Menu (Status SQLite Local)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: const BoxDecoration(
               border: Border(top: BorderSide(color: AppColors.primaryLight, width: 1)),
             ),
@@ -242,15 +311,34 @@ class MainLayout extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.architecture_rounded, color: AppColors.secondary, size: 40),
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(5),
+                    child: Image.asset(
+                      'assets/images/logo_edu.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   const Text(
                     'ERP Marmoraria',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    'Gestão Integrada de Rochas',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
+                    'Edu Mármores & Granitos',
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11.5),
                   ),
                 ],
               ),
@@ -266,13 +354,13 @@ class MainLayout extends StatelessWidget {
                 return ListTile(
                   leading: Icon(
                     isSelected ? item.activeIcon : item.icon,
-                    color: isSelected ? AppColors.secondary : AppColors.textSecondary,
+                    color: isSelected ? AppColors.secondary : null,
                   ),
                   title: Text(
                     item.title,
                     style: TextStyle(
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? AppColors.secondary : AppColors.textPrimary,
+                      color: isSelected ? AppColors.secondary : null,
                     ),
                   ),
                   selected: isSelected,
@@ -282,6 +370,22 @@ class MainLayout extends StatelessWidget {
                   },
                 );
               },
+            ),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: Icon(
+              appProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+              color: Colors.amber,
+            ),
+            title: Text(
+              appProvider.isDarkMode ? 'Modo Escuro' : 'Modo Claro',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            trailing: Switch(
+              value: appProvider.isDarkMode,
+              onChanged: (_) => appProvider.toggleTheme(),
+              activeThumbColor: Colors.amber,
             ),
           ),
         ],

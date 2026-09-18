@@ -38,11 +38,17 @@ class ErpMarmorariaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProducaoProvider()),
         ChangeNotifierProvider(create: (_) => FinanceiroProvider()),
       ],
-      child: MaterialApp(
-        title: 'ERP Marmoraria',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const MainLayout(),
+      child: Consumer<AppProvider>(
+        builder: (context, appProvider, _) {
+          return MaterialApp(
+            title: 'ERP Marmoraria',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: appProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            home: const MainLayout(),
+          );
+        },
       ),
     );
   }
