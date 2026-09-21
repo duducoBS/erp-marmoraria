@@ -211,97 +211,135 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                         const SizedBox(height: 16),
 
                         // Dimensões (Largura, Comprimento, Quantidade, Perda %)
+                        // Dimensões (Largura, Comprimento, Quantidade, Perda %)
                         const Text('Dimensões e Fator de Perda:', style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: _larguraController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                decoration: const InputDecoration(labelText: 'Largura (m)', hintText: '0.60'),
-                                onChanged: (_) => _calcularValores(),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextFormField(
-                                controller: _comprimentoController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                decoration: const InputDecoration(labelText: 'Comprimento (m)', hintText: '2.00'),
-                                onChanged: (_) => _calcularValores(),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextFormField(
-                                controller: _quantidadeController,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(labelText: 'Qtd (un)', hintText: '1'),
-                                onChanged: (_) => _calcularValores(),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextFormField(
-                                controller: _perdaController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                decoration: const InputDecoration(labelText: 'Perda (%)', hintText: '10'),
-                                onChanged: (_) => _calcularValores(),
-                              ),
-                            ),
-                          ],
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isCompact = constraints.maxWidth < 450;
+                            final fieldLargura = TextFormField(
+                              controller: _larguraController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(labelText: 'Largura (m)', hintText: '0.60'),
+                              onChanged: (_) => _calcularValores(),
+                            );
+                            final fieldComprimento = TextFormField(
+                              controller: _comprimentoController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(labelText: 'Comprimento (m)', hintText: '2.00'),
+                              onChanged: (_) => _calcularValores(),
+                            );
+                            final fieldQuantidade = TextFormField(
+                              controller: _quantidadeController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(labelText: 'Qtd (un)', hintText: '1'),
+                              onChanged: (_) => _calcularValores(),
+                            );
+                            final fieldPerda = TextFormField(
+                              controller: _perdaController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(labelText: 'Perda (%)', hintText: '10'),
+                              onChanged: (_) => _calcularValores(),
+                            );
+
+                            if (isCompact) {
+                              return Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(child: fieldLargura),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: fieldComprimento),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Expanded(child: fieldQuantidade),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: fieldPerda),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            } else {
+                              return Row(
+                                children: [
+                                  Expanded(child: fieldLargura),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: fieldComprimento),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: fieldQuantidade),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: fieldPerda),
+                                ],
+                              );
+                            }
+                          },
                         ),
                         const SizedBox(height: 16),
 
                         // Acabamentos e Serviços Especiais
                         const Text('Acabamento de Borda / Serviço Especial:', style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: DropdownButtonFormField<AcabamentoServico?>(
-                                isExpanded: true,
-                                initialValue: _acabamentoSelecionado,
-                                decoration: const InputDecoration(
-                                  prefixIcon: Icon(Icons.handyman_outlined),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isCompact = constraints.maxWidth < 450;
+                            final acabamentoDropdown = DropdownButtonFormField<AcabamentoServico?>(
+                              isExpanded: true,
+                              initialValue: _acabamentoSelecionado,
+                              decoration: const InputDecoration(
+                                prefixIcon: Icon(Icons.handyman_outlined),
+                              ),
+                              items: [
+                                const DropdownMenuItem<AcabamentoServico?>(
+                                  value: null,
+                                  child: Text('Nenhum acabamento extra'),
                                 ),
-                                items: [
-                                  const DropdownMenuItem<AcabamentoServico?>(
-                                    value: null,
-                                    child: Text('Nenhum acabamento extra'),
-                                  ),
-                                  ...widget.acabamentos.map((acab) {
-                                    return DropdownMenuItem<AcabamentoServico?>(
-                                      value: acab,
-                                      child: Text(
-                                        '${acab.nome} (${Formatters.formatCurrency(acab.valor)} / ${acab.tipoCobrancaLabel})',
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  }),
+                                ...widget.acabamentos.map((acab) {
+                                  return DropdownMenuItem<AcabamentoServico?>(
+                                    value: acab,
+                                    child: Text(
+                                      '${acab.nome} (${Formatters.formatCurrency(acab.valor)} / ${acab.tipoCobrancaLabel})',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }),
+                              ],
+                              onChanged: (val) {
+                                _acabamentoSelecionado = val;
+                                _calcularValores();
+                              },
+                            );
+
+                            final acabamentoQtdField = TextFormField(
+                              controller: _acabamentoQtdController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                labelText: _acabamentoSelecionado?.tipoCobranca == 'unidade' ? 'Qtd (un)' : 'Metros Lineares (m)',
+                                hintText: '2.00',
+                              ),
+                              onChanged: (_) => _calcularValores(),
+                            );
+
+                            if (isCompact) {
+                              return Column(
+                                children: [
+                                  acabamentoDropdown,
+                                  const SizedBox(height: 10),
+                                  acabamentoQtdField,
                                 ],
-                                onChanged: (val) {
-                                  _acabamentoSelecionado = val;
-                                  _calcularValores();
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              flex: 2,
-                              child: TextFormField(
-                                controller: _acabamentoQtdController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                decoration: InputDecoration(
-                                  labelText: _acabamentoSelecionado?.tipoCobranca == 'unidade' ? 'Qtd (un)' : 'Metros Lineares (m)',
-                                  hintText: '2.00',
-                                ),
-                                onChanged: (_) => _calcularValores(),
-                              ),
-                            ),
-                          ],
+                              );
+                            } else {
+                              return Row(
+                                children: [
+                                  Expanded(flex: 3, child: acabamentoDropdown),
+                                  const SizedBox(width: 8),
+                                  Expanded(flex: 2, child: acabamentoQtdField),
+                                ],
+                              );
+                            }
+                          },
                         ),
                         const SizedBox(height: 20),
 

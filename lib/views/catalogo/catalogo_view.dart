@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/responsive.dart';
 import '../../models/material_model.dart';
 import '../../models/acabamento_model.dart';
 import '../../providers/orcamento_provider.dart';
@@ -63,8 +64,11 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 10,
               children: [
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,6 +152,8 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
       return const Center(child: Text('Nenhum material cadastrado.'));
     }
 
+    final isDesktop = Responsive.isDesktop(context);
+
     return ListView.separated(
       itemCount: _materiais.length,
       separatorBuilder: (context, index) => const SizedBox(height: 8),
@@ -155,82 +161,148 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
         final mat = _materiais[index];
         final margem = mat.margemLucro;
 
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+        final iconBox = Container(
+          width: isDesktop ? 48 : 40,
+          height: isDesktop ? 48 : 40,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(Icons.layers, color: AppColors.primary, size: isDesktop ? 24 : 20),
+        );
+
+        final actions = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+              onPressed: () => _abrirDialogMaterial(material: mat),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+              onPressed: () => _confirmarExclusaoMaterial(mat),
+            ),
+          ],
+        );
+
+        if (isDesktop) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  iconBox,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                mat.nome,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Chip(
+                              label: Text('${mat.tipo} • ${mat.espessura}', style: const TextStyle(fontSize: 10)),
+                              backgroundColor: AppColors.surfaceVariant,
+                              side: BorderSide.none,
+                              padding: EdgeInsets.zero,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Custo: ${Formatters.formatCurrency(mat.precoM2Custo)}/m² • Margem Bruta: ${margem.toStringAsFixed(1)}%',
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: const Icon(Icons.layers, color: AppColors.primary),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            mat.nome,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text('Preço de Venda / m²', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        Text(
+                          Formatters.formatCurrency(mat.precoM2Venda),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: AppColors.success,
                           ),
-                          const SizedBox(width: 8),
-                          Chip(
-                            label: Text('${mat.tipo} • ${mat.espessura}', style: const TextStyle(fontSize: 10)),
-                            backgroundColor: AppColors.surfaceVariant,
-                            side: BorderSide.none,
-                            padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions,
+                ],
+              ),
+            ),
+          );
+        } else {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      iconBox,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          mat.nome,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Chip(
+                        label: Text('${mat.tipo} • ${mat.espessura}', style: const TextStyle(fontSize: 10)),
+                        backgroundColor: AppColors.surfaceVariant,
+                        side: BorderSide.none,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Custo: ${Formatters.formatCurrency(mat.precoM2Custo)}/m² • Margem: ${margem.toStringAsFixed(1)}%',
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  const Divider(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Preço Venda / m²', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                          Text(
+                            Formatters.formatCurrency(mat.precoM2Venda),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: AppColors.success,
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Custo: ${Formatters.formatCurrency(mat.precoM2Custo)}/m² • Margem Bruta: ${margem.toStringAsFixed(1)}%',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
+                      actions,
                     ],
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text('Preço de Venda / m²', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                      Text(
-                        Formatters.formatCurrency(mat.precoM2Venda),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: AppColors.success,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
-                      onPressed: () => _abrirDialogMaterial(material: mat),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: AppColors.danger),
-                      onPressed: () => _confirmarExclusaoMaterial(mat),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        }
       },
     );
   }
@@ -240,77 +312,135 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
       return const Center(child: Text('Nenhum acabamento cadastrado.'));
     }
 
+    final isDesktop = Responsive.isDesktop(context);
+
     return ListView.separated(
       itemCount: _acabamentos.length,
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final acab = _acabamentos[index];
 
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+        final iconBox = Container(
+          width: isDesktop ? 48 : 40,
+          height: isDesktop ? 48 : 40,
+          decoration: BoxDecoration(
+            color: AppColors.secondary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(Icons.handyman, color: AppColors.secondary, size: isDesktop ? 24 : 20),
+        );
+
+        final actions = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+              onPressed: () => _abrirDialogAcabamento(acabamento: acab),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+              onPressed: () => _confirmarExclusaoAcabamento(acab),
+            ),
+          ],
+        );
+
+        if (isDesktop) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  iconBox,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          acab.nome,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Cobrança: ${acab.tipoCobrancaLabel}',
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: const Icon(Icons.handyman, color: AppColors.secondary),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        acab.nome,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Cobrança: ${acab.tipoCobrancaLabel}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text('Valor do Serviço', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        Text(
+                          Formatters.formatCurrency(acab.valor),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  actions,
+                ],
+              ),
+            ),
+          );
+        } else {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      const Text('Valor do Serviço', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                      Text(
-                        Formatters.formatCurrency(acab.valor),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: AppColors.primary,
+                      iconBox,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          acab.nome,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
-                      onPressed: () => _abrirDialogAcabamento(acabamento: acab),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: AppColors.danger),
-                      onPressed: () => _confirmarExclusaoAcabamento(acab),
-                    ),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    'Cobrança: ${acab.tipoCobrancaLabel}',
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  const Divider(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Valor do Serviço', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                          Text(
+                            Formatters.formatCurrency(acab.valor),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      actions,
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        }
       },
     );
   }

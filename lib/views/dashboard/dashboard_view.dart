@@ -70,7 +70,7 @@ class _DashboardViewState extends State<DashboardView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Banner de Boas-vindas e Ações Rápidas
-            _buildWelcomeHeader(context, appProvider),
+            _buildWelcomeHeader(context, appProvider, isDesktop: isDesktop),
             const SizedBox(height: 24),
 
             // Grid de Cards com Indicadores (KPIs)
@@ -114,7 +114,72 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildWelcomeHeader(BuildContext context, AppProvider appProvider) {
+  Widget _buildWelcomeHeader(BuildContext context, AppProvider appProvider, {required bool isDesktop}) {
+    final titleSection = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(3),
+              child: Image.asset('assets/images/logo_edu.png', fit: BoxFit.contain),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'ERP Marmoraria',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Gestão de chapas, medições na obra, ordens de serviço e fluxo financeiro.',
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13),
+        ),
+      ],
+    );
+
+    final actionsSection = Wrap(
+      spacing: 10,
+      runSpacing: 8,
+      children: [
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.secondary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          onPressed: () {
+            final orcamentoProvider = Provider.of<OrcamentoProvider>(context, listen: false);
+            orcamentoProvider.iniciarNovoOrcamento();
+            appProvider.openNovoOrcamento();
+          },
+          icon: const Icon(Icons.add_shopping_cart, size: 18),
+          label: const Text('Novo Orçamento'),
+        ),
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.white,
+            side: const BorderSide(color: Colors.white70),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          ),
+          onPressed: () => appProvider.openNovaMedicao(),
+          icon: const Icon(Icons.straighten, size: 18),
+          label: const Text('Produção & Medição'),
+        ),
+      ],
+    );
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -132,76 +197,22 @@ class _DashboardViewState extends State<DashboardView> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
+      child: isDesktop
+          ? Row(
+              children: [
+                Expanded(child: titleSection),
+                const SizedBox(width: 16),
+                actionsSection,
+              ],
+            )
+          : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.all(3),
-                      child: Image.asset('assets/images/logo_edu.png', fit: BoxFit.contain),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'ERP Marmoraria',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Gestão de chapas, medições na obra, ordens de serviço e fluxo financeiro.',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13),
-                ),
+                titleSection,
+                const SizedBox(height: 16),
+                actionsSection,
               ],
             ),
-          ),
-          const SizedBox(width: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            children: [
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                onPressed: () {
-                  final orcamentoProvider = Provider.of<OrcamentoProvider>(context, listen: false);
-                  orcamentoProvider.iniciarNovoOrcamento();
-                  appProvider.openNovoOrcamento();
-                },
-                icon: const Icon(Icons.add_shopping_cart, size: 18),
-                label: const Text('Novo Orçamento'),
-              ),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white70),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                ),
-                onPressed: () => appProvider.openNovaMedicao(),
-                icon: const Icon(Icons.straighten, size: 18),
-                label: const Text('Produção & Medição'),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -318,10 +329,12 @@ class _DashboardViewState extends State<DashboardView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.view_kanban_outlined, color: AppColors.primary),
                     SizedBox(width: 8),

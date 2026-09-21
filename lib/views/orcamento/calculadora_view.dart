@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/responsive.dart';
 import '../../models/cliente_model.dart';
 import '../../models/orcamento_model.dart';
 import '../../models/orcamento_item_model.dart';
@@ -102,6 +103,77 @@ class _CalculadoraViewState extends State<CalculadoraView> {
   }
 
   Widget _buildHeaderCard(BuildContext context, OrcamentoProvider provider) {
+    final isDesktop = Responsive.isDesktop(context);
+
+    final clienteField = Row(
+      children: [
+        Expanded(
+          child: DropdownButtonFormField<Cliente>(
+            isExpanded: true,
+            initialValue: provider.selectedCliente,
+            decoration: const InputDecoration(
+              labelText: 'Cliente / Obra',
+              prefixIcon: Icon(Icons.business),
+            ),
+            items: provider.clientes.map((c) {
+              return DropdownMenuItem<Cliente>(
+                value: c,
+                child: Text(
+                  '${c.nome} (${c.tipo}) - ${c.cidade}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }).toList(),
+            onChanged: (cliente) => provider.setSelectedCliente(cliente),
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton.filledTonal(
+          tooltip: 'Cadastrar Novo Cliente',
+          icon: const Icon(Icons.person_add),
+          onPressed: () => _abrirModalNovoCliente(context, provider),
+        ),
+      ],
+    );
+
+    final validadeField = InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: provider.dataValidade,
+          firstDate: DateTime.now().subtract(const Duration(days: 30)),
+          lastDate: DateTime.now().add(const Duration(days: 365)),
+        );
+        if (picked != null) {
+          provider.setDataValidade(picked);
+        }
+      },
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Data de Validade',
+          prefixIcon: Icon(Icons.calendar_today),
+        ),
+        child: Text(Formatters.formatDate(provider.dataValidade)),
+      ),
+    );
+
+    final statusField = DropdownButtonFormField<String>(
+      initialValue: provider.status,
+      decoration: const InputDecoration(
+        labelText: 'Status da Proposta',
+        prefixIcon: Icon(Icons.flag_outlined),
+      ),
+      items: const [
+        DropdownMenuItem(value: 'Rascunho', child: Text('Rascunho')),
+        DropdownMenuItem(value: 'Enviado', child: Text('Enviado')),
+        DropdownMenuItem(value: 'Aprovado', child: Text('Aprovado')),
+        DropdownMenuItem(value: 'Recusado', child: Text('Recusado')),
+      ],
+      onChanged: (val) {
+        if (val != null) provider.setStatus(val);
+      },
+    );
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -120,93 +192,31 @@ class _CalculadoraViewState extends State<CalculadoraView> {
             ),
             const Divider(),
             const SizedBox(height: 10),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Cliente Dropdown com botão de adicionar
-                Expanded(
-                  flex: 3,
-                  child: Row(
+            if (isDesktop)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 3, child: clienteField),
+                  const SizedBox(width: 16),
+                  Expanded(flex: 2, child: validadeField),
+                  const SizedBox(width: 16),
+                  Expanded(flex: 2, child: statusField),
+                ],
+              )
+            else
+              Column(
+                children: [
+                  clienteField,
+                  const SizedBox(height: 12),
+                  Row(
                     children: [
-                      Expanded(
-                        child: DropdownButtonFormField<Cliente>(
-                          isExpanded: true,
-                          initialValue: provider.selectedCliente,
-                          decoration: const InputDecoration(
-                            labelText: 'Cliente / Obra',
-                            prefixIcon: Icon(Icons.business),
-                          ),
-                          items: provider.clientes.map((c) {
-                            return DropdownMenuItem<Cliente>(
-                              value: c,
-                              child: Text(
-                                '${c.nome} (${c.tipo}) - ${c.cidade}',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (cliente) => provider.setSelectedCliente(cliente),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton.filledTonal(
-                        tooltip: 'Cadastrar Novo Cliente',
-                        icon: const Icon(Icons.person_add),
-                        onPressed: () => _abrirModalNovoCliente(context, provider),
-                      ),
+                      Expanded(child: validadeField),
+                      const SizedBox(width: 12),
+                      Expanded(child: statusField),
                     ],
                   ),
-                ),
-                const SizedBox(width: 16),
-
-                // Data de Validade
-                Expanded(
-                  flex: 2,
-                  child: InkWell(
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: provider.dataValidade,
-                        firstDate: DateTime.now().subtract(const Duration(days: 30)),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (picked != null) {
-                        provider.setDataValidade(picked);
-                      }
-                    },
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Data de Validade',
-                        prefixIcon: Icon(Icons.calendar_today),
-                      ),
-                      child: Text(Formatters.formatDate(provider.dataValidade)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-
-                // Status
-                Expanded(
-                  flex: 2,
-                  child: DropdownButtonFormField<String>(
-                    initialValue: provider.status,
-                    decoration: const InputDecoration(
-                      labelText: 'Status da Proposta',
-                      prefixIcon: Icon(Icons.flag_outlined),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'Rascunho', child: Text('Rascunho')),
-                      DropdownMenuItem(value: 'Enviado', child: Text('Enviado')),
-                      DropdownMenuItem(value: 'Aprovado', child: Text('Aprovado')),
-                      DropdownMenuItem(value: 'Recusado', child: Text('Recusado')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) provider.setStatus(val);
-                    },
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),
@@ -220,15 +230,19 @@ class _CalculadoraViewState extends State<CalculadoraView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 10,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.table_view_outlined, color: AppColors.secondary),
                     const SizedBox(width: 8),
                     const Text(
-                      'Itens do Orçamento (Medidas e Acabamentos)',
+                      'Itens do Orçamento',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(width: 8),
@@ -356,90 +370,97 @@ class _CalculadoraViewState extends State<CalculadoraView> {
   }
 
   Widget _buildFooterSection(BuildContext context, OrcamentoProvider provider) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Campo de Observações
-        Expanded(
-          flex: 3,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Observações e Condições de Pagamento:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: _obsController,
-                    maxLines: 4,
-                    decoration: const InputDecoration(
-                      hintText: 'Ex: Entrada de 50% e saldo na entrega. Medição final sujeita a conferência na obra.',
-                    ),
-                    onChanged: (val) => provider.setObservacoes(val),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 20),
+    final isDesktop = Responsive.isDesktop(context);
 
-        // Resumo de Totais
-        Expanded(
-          flex: 2,
-          child: Card(
-            color: AppColors.primary,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'RESUMO DA PROPOSTA',
-                    style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
-                  ),
-                  const Divider(color: Colors.white24, height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Total de Peças:', style: TextStyle(color: Colors.white)),
-                      Text('${provider.itensRascunho.length}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Metragem Total:', style: TextStyle(color: Colors.white)),
-                      Text(Formatters.formatM2(provider.m2TotalRascunho), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const Divider(color: Colors.white24, height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'VALOR TOTAL:',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      Text(
-                        Formatters.formatCurrency(provider.valorTotalRascunho),
-                        style: const TextStyle(
-                          color: AppColors.secondaryLight,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+    final observacoesCard = Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Observações e Condições de Pagamento:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: _obsController,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Ex: Entrada de 50% e saldo na entrega. Medição final sujeita a conferência na obra.',
               ),
+              onChanged: (val) => provider.setObservacoes(val),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
+
+    final resumoCard = Card(
+      color: AppColors.primary,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'RESUMO DA PROPOSTA',
+              style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
+            ),
+            const Divider(color: Colors.white24, height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Total de Peças:', style: TextStyle(color: Colors.white)),
+                Text('${provider.itensRascunho.length}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Metragem Total:', style: TextStyle(color: Colors.white)),
+                Text(Formatters.formatM2(provider.m2TotalRascunho), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const Divider(color: Colors.white24, height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'VALOR TOTAL:',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                Text(
+                  Formatters.formatCurrency(provider.valorTotalRascunho),
+                  style: const TextStyle(
+                    color: AppColors.secondaryLight,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (isDesktop) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 3, child: observacoesCard),
+          const SizedBox(width: 20),
+          Expanded(flex: 2, child: resumoCard),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          observacoesCard,
+          const SizedBox(height: 16),
+          resumoCard,
+        ],
+      );
+    }
   }
 
   void _abrirModalItem(BuildContext context, OrcamentoProvider provider, {OrcamentoItem? item, int? index}) {

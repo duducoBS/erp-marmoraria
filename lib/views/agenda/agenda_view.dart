@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/responsive.dart';
 import '../../models/ordem_servico_model.dart';
 import '../../services/database_service.dart';
 import '../../services/whatsapp_service.dart';
@@ -58,6 +59,7 @@ class _AgendaViewState extends State<AgendaView> {
   @override
   Widget build(BuildContext context) {
     final hojeStr = DateTime.now().toIso8601String().substring(0, 10);
+    final isDesktop = Responsive.isDesktop(context);
 
     return Scaffold(
       body: Padding(
@@ -66,8 +68,11 @@ class _AgendaViewState extends State<AgendaView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 10,
               children: [
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,22 +114,22 @@ class _AgendaViewState extends State<AgendaView> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Row(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    const Text('Filtrar por tipo:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    const SizedBox(width: 12),
+                    const Text('Filtrar:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ChoiceChip(
                       label: const Text('Todos'),
                       selected: _filtro == 'todos',
                       onSelected: (_) => setState(() => _filtro = 'todos'),
                     ),
-                    const SizedBox(width: 8),
                     ChoiceChip(
                       label: const Text('Medições Técnicas'),
                       selected: _filtro == 'medicao',
                       onSelected: (_) => setState(() => _filtro = 'medicao'),
                     ),
-                    const SizedBox(width: 8),
                     ChoiceChip(
                       label: const Text('Entregas / Instalações'),
                       selected: _filtro == 'entrega',
@@ -150,102 +155,185 @@ class _AgendaViewState extends State<AgendaView> {
                             final isHoje = os.dataEntregaPrevista == hojeStr;
                             final isAtrasado = os.dataEntregaPrevista != null && os.dataEntregaPrevista!.compareTo(hojeStr) < 0;
 
-                            return Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    // Ícone de tipo de compromisso
-                                    Container(
-                                      width: 52,
-                                      height: 52,
-                                      decoration: BoxDecoration(
-                                        color: os.statusProducao == 'Medicao'
-                                            ? AppColors.kanbanMedicao.withValues(alpha: 0.12)
-                                            : AppColors.kanbanMontagem.withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(
-                                        os.statusProducao == 'Medicao' ? Icons.straighten : Icons.home_repair_service,
-                                        color: os.statusProducao == 'Medicao' ? AppColors.kanbanMedicao : AppColors.kanbanMontagem,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text(
-                                                os.titulo,
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              if (isHoje)
-                                                const Chip(
-                                                  label: Text('HOJE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-                                                  backgroundColor: AppColors.danger,
-                                                  side: BorderSide.none,
-                                                  padding: EdgeInsets.zero,
-                                                )
-                                              else if (isAtrasado)
-                                                const Chip(
-                                                  label: Text('ATRASADO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-                                                  backgroundColor: AppColors.warning,
-                                                  side: BorderSide.none,
-                                                  padding: EdgeInsets.zero,
-                                                ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Cliente: ${os.clienteNome ?? "N/A"} • Endereço: ${os.clienteEndereco ?? "Não informado"}',
-                                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                                          ),
-                                          if (os.observacoesTecnicas != null && os.observacoesTecnicas!.isNotEmpty)
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 4),
-                                              child: Text(
-                                                'Obs: ${os.observacoesTecnicas!}',
-                                                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          const Text('Data Prevista:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                                          Text(
-                                            Formatters.formatDate(os.dataEntregaPrevista),
-                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                          ),
-                                          Text(
-                                            OrdemServico.getEtapaLabel(os.statusProducao),
-                                            style: const TextStyle(fontSize: 11, color: AppColors.secondary, fontWeight: FontWeight.w600),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (os.clienteTelefone != null && os.clienteTelefone!.isNotEmpty)
-                                      IconButton(
-                                        icon: const Icon(Icons.send_to_mobile, color: Color(0xFF25D366)),
-                                        tooltip: 'Avisar Cliente no WhatsApp',
-                                        onPressed: () {
-                                          WhatsAppService.enviarWhatsApp(
-                                            telefone: os.clienteTelefone!,
-                                            mensagem: 'Olá! Entramos em contato da Marmoraria para confirmar o agendamento da sua obra no dia ${Formatters.formatDate(os.dataEntregaPrevista)}.',
-                                          );
-                                        },
-                                      ),
-                                  ],
-                                ),
+                            final iconBox = Container(
+                              width: isDesktop ? 52 : 42,
+                              height: isDesktop ? 52 : 42,
+                              decoration: BoxDecoration(
+                                color: os.statusProducao == 'Medicao'
+                                    ? AppColors.kanbanMedicao.withValues(alpha: 0.12)
+                                    : AppColors.kanbanMontagem.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                os.statusProducao == 'Medicao' ? Icons.straighten : Icons.home_repair_service,
+                                color: os.statusProducao == 'Medicao' ? AppColors.kanbanMedicao : AppColors.kanbanMontagem,
+                                size: isDesktop ? 24 : 20,
                               ),
                             );
+
+                            final badgeChip = isHoje
+                                ? const Chip(
+                                    label: Text('HOJE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                                    backgroundColor: AppColors.danger,
+                                    side: BorderSide.none,
+                                    padding: EdgeInsets.zero,
+                                  )
+                                : isAtrasado
+                                    ? const Chip(
+                                        label: Text('ATRASADO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                                        backgroundColor: AppColors.warning,
+                                        side: BorderSide.none,
+                                        padding: EdgeInsets.zero,
+                                      )
+                                    : null;
+
+                            final whatsappBtn = (os.clienteTelefone != null && os.clienteTelefone!.isNotEmpty)
+                                ? IconButton(
+                                    icon: const Icon(Icons.send_to_mobile, color: Color(0xFF25D366)),
+                                    tooltip: 'Avisar Cliente no WhatsApp',
+                                    onPressed: () {
+                                      WhatsAppService.enviarWhatsApp(
+                                        telefone: os.clienteTelefone!,
+                                        mensagem: 'Olá! Entramos em contato da Marmoraria para confirmar o agendamento da sua obra no dia ${Formatters.formatDate(os.dataEntregaPrevista)}.',
+                                      );
+                                    },
+                                  )
+                                : null;
+
+                            if (isDesktop) {
+                              return Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      iconBox,
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  os.titulo,
+                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                                ),
+                                                if (badgeChip != null) ...[
+                                                  const SizedBox(width: 8),
+                                                  badgeChip,
+                                                ],
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Cliente: ${os.clienteNome ?? "N/A"} • Endereço: ${os.clienteEndereco ?? "Não informado"}',
+                                              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                            ),
+                                            if (os.observacoesTecnicas != null && os.observacoesTecnicas!.isNotEmpty)
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 4),
+                                                child: Text(
+                                                  'Obs: ${os.observacoesTecnicas!}',
+                                                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            const Text('Data Prevista:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                                            Text(
+                                              Formatters.formatDate(os.dataEntregaPrevista),
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                            ),
+                                            Text(
+                                              OrdemServico.getEtapaLabel(os.statusProducao),
+                                              style: const TextStyle(fontSize: 11, color: AppColors.secondary, fontWeight: FontWeight.w600),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ?whatsappBtn,
+                                    ],
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(14),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          iconBox,
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              os.titulo,
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (badgeChip != null) ...[
+                                            const SizedBox(width: 8),
+                                            badgeChip,
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Cliente: ${os.clienteNome ?? "N/A"}',
+                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                      ),
+                                      if (os.clienteEndereco != null && os.clienteEndereco!.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            'Endereço: ${os.clienteEndereco!}',
+                                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                          ),
+                                        ),
+                                      if (os.observacoesTecnicas != null && os.observacoesTecnicas!.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: Text(
+                                            'Obs: ${os.observacoesTecnicas!}',
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                          ),
+                                        ),
+                                      const Divider(height: 16),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Previsão: ${Formatters.formatDate(os.dataEntregaPrevista)}',
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                              ),
+                                              Text(
+                                                OrdemServico.getEtapaLabel(os.statusProducao),
+                                                style: const TextStyle(fontSize: 11, color: AppColors.secondary, fontWeight: FontWeight.w600),
+                                              ),
+                                            ],
+                                          ),
+                                          ?whatsappBtn,
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
                           },
                         ),
             ),

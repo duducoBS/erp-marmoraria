@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/responsive.dart';
 import '../../models/conta_model.dart';
 import '../../providers/financeiro_provider.dart';
 import 'conta_form_dialog.dart';
@@ -12,6 +13,28 @@ class FinanceiroView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final financeiro = Provider.of<FinanceiroProvider>(context);
+    final isDesktop = Responsive.isDesktop(context);
+
+    final cardReceber = _buildResumoCard(
+      title: 'Total a Receber (Pendente)',
+      value: Formatters.formatCurrency(financeiro.totalAReceberPendente),
+      color: AppColors.success,
+      icon: Icons.arrow_downward,
+    );
+
+    final cardPagar = _buildResumoCard(
+      title: 'Total a Pagar (Pendente)',
+      value: Formatters.formatCurrency(financeiro.totalAPagarPendente),
+      color: AppColors.danger,
+      icon: Icons.arrow_upward,
+    );
+
+    final cardSaldo = _buildResumoCard(
+      title: 'Saldo Projetado',
+      value: Formatters.formatCurrency(financeiro.saldoProjetado),
+      color: financeiro.saldoProjetado >= 0 ? AppColors.accent : AppColors.danger,
+      icon: Icons.account_balance,
+    );
 
     return Scaffold(
       body: Padding(
@@ -20,8 +43,11 @@ class FinanceiroView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 10,
               children: [
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,64 +76,61 @@ class FinanceiroView extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Resumo em Cards
-            Row(
-              children: [
-                Expanded(
-                  child: _buildResumoCard(
-                    title: 'Total a Receber (Pendente)',
-                    value: Formatters.formatCurrency(financeiro.totalAReceberPendente),
-                    color: AppColors.success,
-                    icon: Icons.arrow_downward,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildResumoCard(
-                    title: 'Total a Pagar (Pendente)',
-                    value: Formatters.formatCurrency(financeiro.totalAPagarPendente),
-                    color: AppColors.danger,
-                    icon: Icons.arrow_upward,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildResumoCard(
-                    title: 'Saldo Projetado',
-                    value: Formatters.formatCurrency(financeiro.saldoProjetado),
-                    color: financeiro.saldoProjetado >= 0 ? AppColors.accent : AppColors.danger,
-                    icon: Icons.account_balance,
-                  ),
-                ),
-              ],
-            ),
+            if (isDesktop)
+              Row(
+                children: [
+                  Expanded(child: cardReceber),
+                  const SizedBox(width: 14),
+                  Expanded(child: cardPagar),
+                  const SizedBox(width: 14),
+                  Expanded(child: cardSaldo),
+                ],
+              )
+            else
+              Column(
+                children: [
+                  cardReceber,
+                  const SizedBox(height: 10),
+                  cardPagar,
+                  const SizedBox(height: 10),
+                  cardSaldo,
+                ],
+              ),
             const SizedBox(height: 20),
 
             // Filtros de Tipo e Status
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Row(
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 10,
+                  runSpacing: 8,
                   children: [
-                    const Text('Filtrar por:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    const SizedBox(width: 12),
-                    ChoiceChip(
-                      label: const Text('Todas as Contas'),
-                      selected: financeiro.filtroTipo == 'todos',
-                      onSelected: (_) => financeiro.setFiltroTipo('todos'),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        const Text('Filtrar:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        ChoiceChip(
+                          label: const Text('Todas as Contas'),
+                          selected: financeiro.filtroTipo == 'todos',
+                          onSelected: (_) => financeiro.setFiltroTipo('todos'),
+                        ),
+                        ChoiceChip(
+                          label: const Text('A Receber'),
+                          selected: financeiro.filtroTipo == 'receber',
+                          onSelected: (_) => financeiro.setFiltroTipo('receber'),
+                        ),
+                        ChoiceChip(
+                          label: const Text('A Pagar'),
+                          selected: financeiro.filtroTipo == 'pagar',
+                          onSelected: (_) => financeiro.setFiltroTipo('pagar'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('A Receber'),
-                      selected: financeiro.filtroTipo == 'receber',
-                      onSelected: (_) => financeiro.setFiltroTipo('receber'),
-                    ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('A Pagar'),
-                      selected: financeiro.filtroTipo == 'pagar',
-                      onSelected: (_) => financeiro.setFiltroTipo('pagar'),
-                    ),
-                    const Spacer(),
                     DropdownButton<String>(
                       value: financeiro.filtroStatus,
                       underline: const SizedBox(),
@@ -138,106 +161,191 @@ class FinanceiroView extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final conta = financeiro.contas[index];
                             final isReceita = conta.isReceber;
+                            final color = isReceita ? AppColors.success : AppColors.danger;
 
-                            return Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: isReceita
-                                            ? AppColors.success.withValues(alpha: 0.12)
-                                            : AppColors.danger.withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Icon(
-                                        isReceita ? Icons.arrow_downward : Icons.arrow_upward,
-                                        color: isReceita ? AppColors.success : AppColors.danger,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text(
-                                                conta.descricao,
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Chip(
-                                                label: Text(
-                                                  isReceita ? 'RECEITA' : 'DESPESA',
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: isReceita ? AppColors.success : AppColors.danger,
+                            final iconBox = Container(
+                              width: isDesktop ? 48 : 40,
+                              height: isDesktop ? 48 : 40,
+                              decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                isReceita ? Icons.arrow_downward : Icons.arrow_upward,
+                                color: color,
+                                size: isDesktop ? 24 : 20,
+                              ),
+                            );
+
+                            final actionButtons = Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton.filledTonal(
+                                  tooltip: conta.isPago ? 'Marcar como Pendente' : 'Marcar como Pago/Recebido',
+                                  icon: Icon(
+                                    conta.isPago ? Icons.check_circle : Icons.radio_button_unchecked,
+                                    color: conta.isPago ? AppColors.success : AppColors.textSecondary,
+                                  ),
+                                  onPressed: () => financeiro.alternarStatusPagamento(conta),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+                                  onPressed: () => _abrirDialogConta(context, financeiro, conta: conta),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+                                  onPressed: () => financeiro.excluirConta(conta.id!),
+                                ),
+                              ],
+                            );
+
+                            if (isDesktop) {
+                              return Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      iconBox,
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Flexible(
+                                                  child: Text(
+                                                    conta.descricao,
+                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
-                                                backgroundColor: (isReceita ? AppColors.success : AppColors.danger).withValues(alpha: 0.1),
-                                                side: BorderSide.none,
-                                                padding: EdgeInsets.zero,
+                                                const SizedBox(width: 8),
+                                                Chip(
+                                                  label: Text(
+                                                    isReceita ? 'RECEITA' : 'DESPESA',
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: color,
+                                                    ),
+                                                  ),
+                                                  backgroundColor: color.withValues(alpha: 0.1),
+                                                  side: BorderSide.none,
+                                                  padding: EdgeInsets.zero,
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Vencimento: ${Formatters.formatDate(conta.dataVencimento)}',
+                                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              Formatters.formatCurrency(conta.valor),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 17,
+                                                color: color,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              conta.statusPagamento,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                                color: conta.isPago ? AppColors.success : AppColors.warning,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      actionButtons,
+                                    ],
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(14),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          iconBox,
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              conta.descricao,
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Chip(
+                                            label: Text(
+                                              isReceita ? 'RECEITA' : 'DESPESA',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: color,
+                                              ),
+                                            ),
+                                            backgroundColor: color.withValues(alpha: 0.1),
+                                            side: BorderSide.none,
+                                            padding: EdgeInsets.zero,
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Vencimento: ${Formatters.formatDate(conta.dataVencimento)}',
+                                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                      ),
+                                      const Divider(height: 16),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                Formatters.formatCurrency(conta.valor),
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                  color: color,
+                                                ),
+                                              ),
+                                              Text(
+                                                conta.statusPagamento,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: conta.isPago ? AppColors.success : AppColors.warning,
+                                                ),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Vencimento: ${Formatters.formatDate(conta.dataVencimento)}',
-                                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                          ),
+                                          actionButtons,
                                         ],
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            Formatters.formatCurrency(conta.valor),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 17,
-                                              color: isReceita ? AppColors.success : AppColors.danger,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            conta.statusPagamento,
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              color: conta.isPago ? AppColors.success : AppColors.warning,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton.filledTonal(
-                                      tooltip: conta.isPago ? 'Marcar como Pendente' : 'Marcar como Pago/Recebido',
-                                      icon: Icon(
-                                        conta.isPago ? Icons.check_circle : Icons.radio_button_unchecked,
-                                        color: conta.isPago ? AppColors.success : AppColors.textSecondary,
-                                      ),
-                                      onPressed: () => financeiro.alternarStatusPagamento(conta),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
-                                      onPressed: () => _abrirDialogConta(context, financeiro, conta: conta),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline, color: AppColors.danger),
-                                      onPressed: () => financeiro.excluirConta(conta.id!),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
+                              );
+                            }
                           },
                         ),
             ),

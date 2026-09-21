@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/responsive.dart';
 import '../../models/orcamento_model.dart';
 import '../../providers/orcamento_provider.dart';
 import '../../services/pdf_service.dart';
@@ -45,8 +46,11 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Barra Superior de Título e Novo Orçamento
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 10,
               children: [
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,61 +85,111 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Buscar por cliente, ambiente ou observações...',
-                          prefixIcon: const Icon(Icons.search),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    provider.setBusca('');
-                                  },
-                                )
-                              : null,
-                        ),
-                        onChanged: (val) => provider.setBusca(val),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 2,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            'Todos',
-                            'Rascunho',
-                            'Enviado',
-                            'Aprovado',
-                            'Recusado',
-                          ].map((st) {
-                            final isSelected = provider.filtroStatus == st;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: ChoiceChip(
-                                label: Text(st),
-                                selected: isSelected,
-                                onSelected: (_) => provider.setFiltroStatus(st),
-                                selectedColor: AppColors.primary,
-                                labelStyle: TextStyle(
-                                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                ),
+                child: Responsive.isDesktop(context)
+                    ? Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Buscar por cliente, ambiente ou observações...',
+                                prefixIcon: const Icon(Icons.search),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          provider.setBusca('');
+                                        },
+                                      )
+                                    : null,
                               ),
-                            );
-                          }).toList(),
-                        ),
+                              onChanged: (val) => provider.setBusca(val),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 2,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  'Todos',
+                                  'Rascunho',
+                                  'Enviado',
+                                  'Aprovado',
+                                  'Recusado',
+                                ].map((st) {
+                                  final isSelected = provider.filtroStatus == st;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 6),
+                                    child: ChoiceChip(
+                                      label: Text(st),
+                                      selected: isSelected,
+                                      onSelected: (_) => provider.setFiltroStatus(st),
+                                      selectedColor: AppColors.primary,
+                                      labelStyle: TextStyle(
+                                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        children: [
+                          TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Buscar orçamentos...',
+                              prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchController.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        provider.setBusca('');
+                                      },
+                                    )
+                                  : null,
+                            ),
+                            onChanged: (val) => provider.setBusca(val),
+                          ),
+                          const SizedBox(height: 10),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                'Todos',
+                                'Rascunho',
+                                'Enviado',
+                                'Aprovado',
+                                'Recusado',
+                              ].map((st) {
+                                final isSelected = provider.filtroStatus == st;
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: ChoiceChip(
+                                    label: Text(st),
+                                    selected: isSelected,
+                                    onSelected: (_) => provider.setFiltroStatus(st),
+                                    selectedColor: AppColors.primary,
+                                    labelStyle: TextStyle(
+                                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -183,142 +237,222 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
   }
 
   Widget _buildOrcamentoCard(BuildContext context, Orcamento orc, OrcamentoProvider provider) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            // Badge ID
-            Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                color: _getStatusColor(orc.status).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  '#${orc.id}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: _getStatusColor(orc.status),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
+    final isDesktop = Responsive.isDesktop(context);
 
-            // Informações do Orçamento
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        orc.clienteNome ?? 'Cliente Desconhecido',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(width: 10),
-                      Chip(
-                        label: Text(
-                          orc.status,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: _getStatusColor(orc.status),
-                          ),
-                        ),
-                        backgroundColor: _getStatusColor(orc.status).withValues(alpha: 0.1),
-                        side: BorderSide.none,
-                        padding: EdgeInsets.zero,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Emissão: ${Formatters.formatDate(orc.dataCriacao)} • Validade: ${Formatters.formatDate(orc.dataValidade)}',
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                  ),
-                  if (orc.observacoes.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        orc.observacoes,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+    final statusColor = _getStatusColor(orc.status);
 
-            // Valor Total
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text('Valor Total:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                  Text(
-                    Formatters.formatCurrency(orc.valorTotal),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Botões de Ação
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.picture_as_pdf, color: AppColors.accent),
-                  tooltip: 'Gerar PDF A4',
-                  onPressed: () => _imprimirPdf(orc),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send_to_mobile, color: Color(0xFF25D366)),
-                  tooltip: 'Enviar WhatsApp',
-                  onPressed: () => _enviarWhatsApp(orc),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
-                  tooltip: 'Editar na Calculadora',
-                  onPressed: () async {
-                    await provider.editarOrcamento(orc);
-                    setState(() => _mostrarCalculadora = true);
-                  },
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (val) async {
-                    if (val == 'Aprovado' || val == 'Recusado' || val == 'Enviado') {
-                      await provider.alterarStatusOrcamento(orc.id!, val);
-                    } else if (val == 'Excluir') {
-                      _confirmarExclusao(context, orc.id!, provider);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'Aprovado', child: Text('Marcar como Aprovado (Gera OS)')),
-                    const PopupMenuItem(value: 'Enviado', child: Text('Marcar como Enviado')),
-                    const PopupMenuItem(value: 'Recusado', child: Text('Marcar como Recusado')),
-                    const PopupMenuDivider(),
-                    const PopupMenuItem(value: 'Excluir', child: Text('Excluir Orçamento', style: TextStyle(color: Colors.red))),
-                  ],
-                ),
-              ],
-            ),
-          ],
+    final badge = Container(
+      width: isDesktop ? 54 : 44,
+      height: isDesktop ? 54 : 44,
+      decoration: BoxDecoration(
+        color: statusColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Text(
+          '#${orc.id}',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: isDesktop ? 16 : 14,
+            color: statusColor,
+          ),
         ),
       ),
     );
+
+    final actionButtons = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.picture_as_pdf, color: AppColors.accent),
+          tooltip: 'Gerar PDF A4',
+          onPressed: () => _imprimirPdf(orc),
+        ),
+        IconButton(
+          icon: const Icon(Icons.send_to_mobile, color: Color(0xFF25D366)),
+          tooltip: 'Enviar WhatsApp',
+          onPressed: () => _enviarWhatsApp(orc),
+        ),
+        IconButton(
+          icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+          tooltip: 'Editar na Calculadora',
+          onPressed: () async {
+            await provider.editarOrcamento(orc);
+            setState(() => _mostrarCalculadora = true);
+          },
+        ),
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert),
+          onSelected: (val) async {
+            if (val == 'Aprovado' || val == 'Recusado' || val == 'Enviado') {
+              await provider.alterarStatusOrcamento(orc.id!, val);
+            } else if (val == 'Excluir') {
+              _confirmarExclusao(context, orc.id!, provider);
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(value: 'Aprovado', child: Text('Marcar como Aprovado (Gera OS)')),
+            const PopupMenuItem(value: 'Enviado', child: Text('Marcar como Enviado')),
+            const PopupMenuItem(value: 'Recusado', child: Text('Marcar como Recusado')),
+            const PopupMenuDivider(),
+            const PopupMenuItem(value: 'Excluir', child: Text('Excluir Orçamento', style: TextStyle(color: Colors.red))),
+          ],
+        ),
+      ],
+    );
+
+    if (isDesktop) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              badge,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          orc.clienteNome ?? 'Cliente Desconhecido',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const SizedBox(width: 10),
+                        Chip(
+                          label: Text(
+                            orc.status,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: statusColor,
+                            ),
+                          ),
+                          backgroundColor: statusColor.withValues(alpha: 0.1),
+                          side: BorderSide.none,
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Emissão: ${Formatters.formatDate(orc.dataCriacao)} • Validade: ${Formatters.formatDate(orc.dataValidade)}',
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                    ),
+                    if (orc.observacoes.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          orc.observacoes,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text('Valor Total:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                    Text(
+                      Formatters.formatCurrency(orc.valorTotal),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actionButtons,
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  badge,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          orc.clienteNome ?? 'Cliente Desconhecido',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Validade: ${Formatters.formatDate(orc.dataValidade)}',
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Chip(
+                    label: Text(
+                      orc.status,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: statusColor,
+                      ),
+                    ),
+                    backgroundColor: statusColor.withValues(alpha: 0.1),
+                    side: BorderSide.none,
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+              if (orc.observacoes.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  orc.observacoes,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                ),
+              ],
+              const Divider(height: 18),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Valor Total:', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                      Text(
+                        Formatters.formatCurrency(orc.valorTotal),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  actionButtons,
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   Color _getStatusColor(String status) {
