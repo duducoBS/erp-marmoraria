@@ -47,7 +47,8 @@ class OrcamentoItem {
     required double perdaPercentual,
   }) {
     final liquido = largura * comprimento * quantidade;
-    return liquido * (1.0 + (perdaPercentual / 100.0));
+    final comPerda = liquido * (1.0 + (perdaPercentual / 100.0));
+    return double.parse(comPerda.toStringAsFixed(4));
   }
 
   /// Cálculo do valor parcial do item
@@ -59,7 +60,8 @@ class OrcamentoItem {
   }) {
     final valorMaterial = m2Total * precoM2Venda;
     final valorAcabamento = acabamentoValorUnitario * acabamentoQuantidade;
-    return valorMaterial + valorAcabamento;
+    final total = valorMaterial + valorAcabamento;
+    return double.parse(total.toStringAsFixed(2));
   }
 
   Map<String, dynamic> toMap() {

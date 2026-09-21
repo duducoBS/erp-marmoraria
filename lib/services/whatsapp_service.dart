@@ -23,8 +23,8 @@ class WhatsAppService {
       buffer.writeln('');
       buffer.writeln('*${i + 1}. ${item.ambiente}*');
       buffer.writeln('• Rocha/Material: ${item.materialNome ?? "Material #${item.materialId}"}');
-      buffer.writeln('• Medidas: ${item.largura.toStringAsFixed(2)}m x ${item.comprimento.toStringAsFixed(2)}m (Qtd: ${item.quantidade})');
-      buffer.writeln('• Área c/ perda: ${Formatters.formatM2(item.m2Total)} (+${item.perdaPercentual.toStringAsFixed(0)}%)');
+      buffer.writeln('• Medidas: ${Formatters.formatDecimal(item.largura)}m x ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade})');
+      buffer.writeln('• Área c/ perda: ${Formatters.formatM2(item.m2Total)} (+${Formatters.formatDecimal(item.perdaPercentual, decimals: 0)}%)');
       if (item.acabamentoNome != null) {
         buffer.writeln('• Acabamento: ${item.acabamentoNome}');
       }

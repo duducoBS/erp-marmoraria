@@ -164,10 +164,10 @@ class PdfService {
                 ),
                 // Linhas de Itens
                 ...orcamento.itens.map((item) {
-                  final perdaStr = '+${item.perdaPercentual.toStringAsFixed(0)}%';
-                  final medidasStr = '${item.largura.toStringAsFixed(2)} x ${item.comprimento.toStringAsFixed(2)}m (x${item.quantidade})';
+                  final perdaStr = '+${Formatters.formatDecimal(item.perdaPercentual, decimals: 0)}%';
+                  final medidasStr = '${Formatters.formatDecimal(item.largura)} x ${Formatters.formatDecimal(item.comprimento)}m (x${item.quantidade})';
                   final acabamentoStr = item.acabamentoNome != null
-                      ? '${item.acabamentoNome!} (${item.acabamentoQuantidade > 0 ? item.acabamentoQuantidade.toStringAsFixed(2) : ""})'
+                      ? '${item.acabamentoNome!} (${item.acabamentoQuantidade > 0 ? Formatters.formatDecimal(item.acabamentoQuantidade) : ""})'
                       : 'Padrão Reto';
 
                   return pw.TableRow(
@@ -175,7 +175,7 @@ class PdfService {
                       _tableCell(item.ambiente),
                       _tableCell(item.materialNome ?? 'Material #${item.materialId}'),
                       _tableCell(medidasStr),
-                      _tableCell('${item.m2Total.toStringAsFixed(2)} m² ($perdaStr)'),
+                      _tableCell('${Formatters.formatDecimal(item.m2Total)} m² ($perdaStr)'),
                       _tableCell(acabamentoStr),
                       _tableCell(Formatters.formatCurrency(item.valorParcial), align: pw.TextAlign.right),
                     ],

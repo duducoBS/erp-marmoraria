@@ -28,7 +28,7 @@ class _AcabamentoFormDialogState extends State<AcabamentoFormDialog> {
     final a = widget.acabamentoInicial;
     _nomeController = TextEditingController(text: a?.nome ?? '');
     _tipoCobranca = a?.tipoCobranca ?? 'metro_linear';
-    _valorController = TextEditingController(text: a != null ? a.valor.toStringAsFixed(2) : '');
+    _valorController = TextEditingController(text: a != null ? Formatters.formatDecimal(a.valor) : '');
   }
 
   @override

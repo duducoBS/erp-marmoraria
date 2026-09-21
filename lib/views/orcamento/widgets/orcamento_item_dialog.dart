@@ -56,11 +56,11 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
     final item = widget.itemInicial;
 
     _ambienteController = TextEditingController(text: item?.ambiente ?? 'Cozinha');
-    _larguraController = TextEditingController(text: item != null ? item.largura.toStringAsFixed(2) : '0.60');
-    _comprimentoController = TextEditingController(text: item != null ? item.comprimento.toStringAsFixed(2) : '2.00');
+    _larguraController = TextEditingController(text: item != null ? Formatters.formatDecimal(item.largura) : '0,60');
+    _comprimentoController = TextEditingController(text: item != null ? Formatters.formatDecimal(item.comprimento) : '2,00');
     _quantidadeController = TextEditingController(text: item != null ? item.quantidade.toString() : '1');
     _perdaController = TextEditingController(text: item != null ? item.perdaPercentual.toStringAsFixed(0) : '10');
-    _acabamentoQtdController = TextEditingController(text: item != null ? item.acabamentoQuantidade.toStringAsFixed(2) : '2.00');
+    _acabamentoQtdController = TextEditingController(text: item != null ? Formatters.formatDecimal(item.acabamentoQuantidade) : '2,00');
 
     if (item != null) {
       _materialSelecionado = widget.materiais.firstWhere(
@@ -220,13 +220,13 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                             final fieldLargura = TextFormField(
                               controller: _larguraController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(labelText: 'Largura (m)', hintText: '0.60'),
+                              decoration: const InputDecoration(labelText: 'Largura (m)', hintText: '0,60'),
                               onChanged: (_) => _calcularValores(),
                             );
                             final fieldComprimento = TextFormField(
                               controller: _comprimentoController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(labelText: 'Comprimento (m)', hintText: '2.00'),
+                              decoration: const InputDecoration(labelText: 'Comprimento (m)', hintText: '2,00'),
                               onChanged: (_) => _calcularValores(),
                             );
                             final fieldQuantidade = TextFormField(
@@ -317,7 +317,7 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: InputDecoration(
                                 labelText: _acabamentoSelecionado?.tipoCobranca == 'unidade' ? 'Qtd (un)' : 'Metros Lineares (m)',
-                                hintText: '2.00',
+                                hintText: '2,00',
                               ),
                               onChanged: (_) => _calcularValores(),
                             );

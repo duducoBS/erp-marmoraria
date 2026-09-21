@@ -201,7 +201,7 @@ class DatabaseHelper {
       'data_criacao': hojeStr,
       'data_validade': validadeStr,
       'status': 'Aprovado',
-      'valor_total': 3450.00,
+      'valor_total': 2682.60,
       'observacoes': 'Bancada de cozinha com ilha em Granito Preto São Gabriel com acabamento 45 graus.',
     });
 
@@ -209,29 +209,29 @@ class DatabaseHelper {
     await db.insert('orcamento_itens', {
       'orcamento_id': orcamentoId,
       'ambiente': 'Cozinha Principal',
-      'material_id': 1, // Granito Preto São Gabriel
+      'material_id': 1, // Granito Preto São Gabriel (R$ 550/m²)
       'largura': 0.60,
       'comprimento': 3.20,
       'quantidade': 1,
       'm2_total': 2.112, // 1.92 * 1.10
       'perda_percentual': 10.0,
-      'acabamento_id': 1, // 45 graus
+      'acabamento_id': 1, // 45 graus (R$ 60/m)
       'acabamento_quantidade': 3.20,
-      'valor_parcial': 1432.96,
+      'valor_parcial': 1353.60,
     });
 
     await db.insert('orcamento_itens', {
       'orcamento_id': orcamentoId,
       'ambiente': 'Ilha Central',
-      'material_id': 1,
+      'material_id': 1, // Granito Preto São Gabriel (R$ 550/m²)
       'largura': 0.90,
       'comprimento': 2.00,
       'quantidade': 1,
-      'm2_total': 1.98,
+      'm2_total': 1.98, // 1.80 * 1.10
       'perda_percentual': 10.0,
-      'acabamento_id': 1,
+      'acabamento_id': 1, // 45 graus (R$ 60/m)
       'acabamento_quantidade': 4.00,
-      'valor_parcial': 1408.40,
+      'valor_parcial': 1329.00,
     });
 
     // OS Demonstrativa
@@ -259,7 +259,7 @@ class DatabaseHelper {
       'orcamento_id': orcamentoId,
       'tipo': 'receber',
       'descricao': 'Entrada Pedido Cozinha - Construtora Horizonte',
-      'valor': 1725.00,
+      'valor': 1341.30,
       'data_vencimento': hojeStr,
       'status_pagamento': 'Pago',
     });
@@ -268,7 +268,7 @@ class DatabaseHelper {
       'orcamento_id': orcamentoId,
       'tipo': 'receber',
       'descricao': 'Saldo Entrega Pedido Cozinha - Construtora Horizonte',
-      'valor': 1725.00,
+      'valor': 1341.30,
       'data_vencimento': entregaStr,
       'status_pagamento': 'Pendente',
     });

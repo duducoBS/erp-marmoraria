@@ -27,7 +27,7 @@ class _ContaFormDialogState extends State<ContaFormDialog> {
     super.initState();
     final c = widget.contaInicial;
     _descricaoController = TextEditingController(text: c?.descricao ?? '');
-    _valorController = TextEditingController(text: c != null ? c.valor.toStringAsFixed(2) : '');
+    _valorController = TextEditingController(text: c != null ? Formatters.formatDecimal(c.valor) : '');
     _tipo = c?.tipo ?? 'pagar';
     _status = c?.statusPagamento ?? 'Pendente';
 

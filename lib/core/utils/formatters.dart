@@ -13,14 +13,18 @@ class Formatters {
 
   /// Formata um valor numérico para Moeda Real (ex: R$ 1.250,00)
   static String formatCurrency(num? value) {
-    if (value == null) return 'R\$ 0,00';
-    return _currencyFormat.format(value);
+    if (value == null || value.isNaN || value.isInfinite) return r'R$ 0,00';
+    return _currencyFormat.format(value).replaceAll('\u00a0', ' ');
   }
 
-  /// Formata número com 2 casas decimais (ex: 2,50)
-  static String formatDecimal(num? value) {
-    if (value == null) return '0,00';
-    return _decimalFormat.format(value);
+  /// Formata número com casas decimais no padrão brasileiro (ex: 2,50)
+  static String formatDecimal(num? value, {int decimals = 2}) {
+    if (value == null || value.isNaN || value.isInfinite) return '0,00';
+    if (decimals == 2) {
+      return _decimalFormat.format(value);
+    }
+    final format = NumberFormat.currency(locale: 'pt_BR', symbol: '', decimalDigits: decimals);
+    return format.format(value).trim();
   }
 
   /// Formata metragem quadrada (ex: 3,45 m²)
@@ -55,10 +59,39 @@ class Formatters {
     return _dateIsoFormat.format(date);
   }
 
-  /// Converte texto digitado com vírgula ou ponto em double
+  /// Converte texto digitado com vírgula ou ponto em double de forma segura.
+  /// Suporta formatos BRL: "1.250,50", "2,50", "0,60"
+  /// Suporta formatos com ponto decimal / numpad: "1250.50", "2.50", "0.60", "1250"
+  /// Suporta prefixos de moeda: "R$ 1.250,50"
   static double parseDouble(String text) {
-    if (text.trim().isEmpty) return 0.0;
-    final normalized = text.replaceAll('.', '').replaceAll(',', '.').trim();
-    return double.tryParse(normalized) ?? 0.0;
+    var cleaned = text.replaceAll(RegExp(r'[^0-9,\.-]'), '').trim();
+    if (cleaned.isEmpty) return 0.0;
+
+    // Se possui vírgula E ponto
+    if (cleaned.contains(',') && cleaned.contains('.')) {
+      final lastComma = cleaned.lastIndexOf(',');
+      final lastDot = cleaned.lastIndexOf('.');
+      if (lastComma > lastDot) {
+        // Padrão Brasileiro: 1.250,50 -> remove pontos de milhar, vírgula vira ponto decimal
+        cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
+      } else {
+        // Padrão Internacional: 1,250.50 -> remove vírgulas de milhar
+        cleaned = cleaned.replaceAll(',', '');
+      }
+    } else if (cleaned.contains(',')) {
+      // Apenas vírgula: "2,50", "0,60", "1500,00" -> vírgula é separador decimal
+      cleaned = cleaned.replaceAll(',', '.');
+    } else if (cleaned.contains('.')) {
+      // Apenas ponto(s)
+      final dots = cleaned.split('.').length - 1;
+      if (dots > 1) {
+        // Múltiplos pontos: "1.000.000" -> pontos de milhar
+        cleaned = cleaned.replaceAll('.', '');
+      } else {
+        // Apenas um ponto: "0.60", "2.50", "150.50", "1250.00" -> ponto decimal padrão
+      }
+    }
+
+    return double.tryParse(cleaned) ?? 0.0;
   }
 }

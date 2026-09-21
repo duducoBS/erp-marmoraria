@@ -42,11 +42,13 @@ class OrcamentoProvider extends ChangeNotifier {
   List<OrcamentoItem> get itensRascunho => List.unmodifiable(_itensRascunho);
 
   double get valorTotalRascunho {
-    return _itensRascunho.fold(0.0, (sum, item) => sum + item.valorParcial);
+    final total = _itensRascunho.fold(0.0, (sum, item) => sum + item.valorParcial);
+    return double.parse(total.toStringAsFixed(2));
   }
 
   double get m2TotalRascunho {
-    return _itensRascunho.fold(0.0, (sum, item) => sum + item.m2Total);
+    final total = _itensRascunho.fold(0.0, (sum, item) => sum + item.m2Total);
+    return double.parse(total.toStringAsFixed(4));
   }
 
   OrcamentoProvider() {

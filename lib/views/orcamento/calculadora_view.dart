@@ -326,12 +326,12 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                       children: [
                         const SizedBox(height: 4),
                         Text(
-                          'Medidas: ${item.largura.toStringAsFixed(2)}m × ${item.comprimento.toStringAsFixed(2)}m (Qtd: ${item.quantidade}) • Área c/ perda: ${Formatters.formatM2(item.m2Total)} (+${item.perdaPercentual.toStringAsFixed(0)}%)',
+                          'Medidas: ${Formatters.formatDecimal(item.largura)}m × ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade}) • Área c/ perda: ${Formatters.formatM2(item.m2Total)} (+${Formatters.formatDecimal(item.perdaPercentual, decimals: 0)}%)',
                           style: const TextStyle(fontSize: 13),
                         ),
                         if (item.acabamentoNome != null)
                           Text(
-                            'Acabamento: ${item.acabamentoNome} (${item.acabamentoQuantidade.toStringAsFixed(2)})',
+                            'Acabamento: ${item.acabamentoNome} (${Formatters.formatDecimal(item.acabamentoQuantidade)})',
                             style: const TextStyle(fontSize: 12, color: AppColors.secondary, fontWeight: FontWeight.w500),
                           ),
                       ],

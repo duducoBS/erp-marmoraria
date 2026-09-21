@@ -41,8 +41,8 @@ class _MaterialFormDialogState extends State<MaterialFormDialog> {
     final m = widget.materialInicial;
     _nomeController = TextEditingController(text: m?.nome ?? '');
     _tipo = m?.tipo ?? 'Granito';
-    _custoController = TextEditingController(text: m != null ? m.precoM2Custo.toStringAsFixed(2) : '');
-    _vendaController = TextEditingController(text: m != null ? m.precoM2Venda.toStringAsFixed(2) : '');
+    _custoController = TextEditingController(text: m != null ? Formatters.formatDecimal(m.precoM2Custo) : '');
+    _vendaController = TextEditingController(text: m != null ? Formatters.formatDecimal(m.precoM2Venda) : '');
     _espessuraController = TextEditingController(text: m?.espessura ?? '2cm');
   }
 
