@@ -322,7 +322,7 @@ class PdfService {
             if (acabamentosImage != null) ...[
               pw.Container(
                 width: double.infinity,
-                padding: const pw.EdgeInsets.symmetric(vertical: 3),
+                padding: const pw.EdgeInsets.symmetric(vertical: 2.5),
                 decoration: const pw.BoxDecoration(
                   color: PdfColors.blueGrey100,
                   borderRadius: pw.BorderRadius.all(pw.Radius.circular(2)),
@@ -339,11 +339,12 @@ class PdfService {
                   ),
                 ),
               ),
-              pw.SizedBox(height: 3),
+              pw.SizedBox(height: 2),
               pw.Container(
-                height: 110,
+                height: 125,
                 width: double.infinity,
                 alignment: pw.Alignment.center,
+                padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: pw.BoxDecoration(
                   color: PdfColors.white,
                   border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
@@ -458,36 +459,41 @@ class PdfService {
                 ),
               ],
             ),
-            pw.SizedBox(height: 12),
+            pw.SizedBox(height: 16),
 
-            // 7. BLOCO DE ASSINATURAS E FECHAMENTO
+            // 7. BLOCO DE ASSINATURAS E FECHAMENTO (CAMPO AMPLO PARA ASSINATURA)
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Expanded(
                   child: pw.Column(
                     children: [
+                      // Espaço generoso para assinatura do Edu / Responsável Técnico
+                      pw.Container(height: 38),
                       pw.Container(height: 0.8, color: PdfColors.black),
-                      pw.SizedBox(height: 2),
-                      pw.Text(empresa.nome, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
-                      pw.Text('Responsável Técnico / Vendedor', style: const pw.TextStyle(fontSize: 6.5, color: PdfColors.grey700)),
+                      pw.SizedBox(height: 3),
+                      pw.Text(empresa.nome, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                      pw.Text('Responsável Técnico / Vendedor', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
                     ],
                   ),
                 ),
-                pw.SizedBox(width: 30),
+                pw.SizedBox(width: 40),
                 pw.Expanded(
                   child: pw.Column(
                     children: [
+                      // Espaço generoso para assinatura do Cliente
+                      pw.Container(height: 38),
                       pw.Container(height: 0.8, color: PdfColors.black),
-                      pw.SizedBox(height: 2),
-                      pw.Text('DE ACORDO DO CLIENTE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
-                      pw.Text('Assinatura do Solicitante / Data: ____/____/________', style: const pw.TextStyle(fontSize: 6.5, color: PdfColors.grey700)),
+                      pw.SizedBox(height: 3),
+                      pw.Text('DE ACORDO DO CLIENTE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                      pw.Text('Assinatura do Solicitante / Data: ____/____/________', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
                     ],
                   ),
                 ),
               ],
             ),
-            pw.SizedBox(height: 8),
+            pw.SizedBox(height: 10),
 
             // 8. DADOS BANCÁRIOS E CHAVE PIX NO RODAPÉ
             pw.Container(
