@@ -6,6 +6,7 @@ import '../../core/utils/responsive.dart';
 import '../../models/cliente_model.dart';
 import '../../models/orcamento_model.dart';
 import '../../models/orcamento_item_model.dart';
+import '../../models/orcamento_parcela_model.dart';
 import '../../providers/orcamento_provider.dart';
 import '../../providers/producao_provider.dart';
 import '../../providers/financeiro_provider.dart';
@@ -350,7 +351,7 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                           )
                         else
                           Text(
-                            'Medidas: ${Formatters.formatDecimal(item.largura)}m × ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade}) • Área c/ perda: ${Formatters.formatM2(item.m2Total)} • ${Formatters.formatCurrency(item.precoMetro)}/m²',
+                            'Medidas: ${Formatters.formatDecimal(item.largura)}m x ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade}) • Área c/ perda: ${Formatters.formatM2(item.m2Total)} • ${Formatters.formatCurrency(item.precoMetro)}/m²',
                             style: const TextStyle(fontSize: 13),
                           ),
                         if (item.acabamentoNome != null)
@@ -416,33 +417,82 @@ class _CalculadoraViewState extends State<CalculadoraView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.payment, color: AppColors.secondary, size: 20),
-                    SizedBox(width: 8),
-                    Text('Condições de Pagamento & Parcelas:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const Icon(Icons.payment, color: AppColors.secondary, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Condições de Pagamento & Parcelas (${provider.parcelas.length}):',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
                   ],
                 ),
                 Wrap(
-                  spacing: 6,
+                  spacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    ActionChip(
-                      label: const Text('1x À Vista', style: TextStyle(fontSize: 11)),
-                      onPressed: () => provider.gerarParcelasAutomaticas(1),
-                    ),
-                    ActionChip(
-                      label: const Text('2x', style: TextStyle(fontSize: 11)),
-                      onPressed: () => provider.gerarParcelasAutomaticas(2),
-                    ),
-                    ActionChip(
-                      label: const Text('3x', style: TextStyle(fontSize: 11)),
-                      onPressed: () => provider.gerarParcelasAutomaticas(3),
-                    ),
-                    ActionChip(
-                      label: const Text('4x', style: TextStyle(fontSize: 11)),
-                      onPressed: () => provider.gerarParcelasAutomaticas(4),
+                    if (provider.parcelas.isNotEmpty)
+                      TextButton.icon(
+                        icon: const Icon(Icons.delete_sweep_outlined, size: 18, color: AppColors.danger),
+                        label: const Text('Limpar', style: TextStyle(color: AppColors.danger, fontSize: 12)),
+                        onPressed: () => provider.limparParcelas(),
+                      ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('+ Adicionar Parcela'),
+                      onPressed: () => _abrirModalParcela(context, provider),
                     ),
                   ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                ActionChip(
+                  avatar: const Icon(Icons.flash_on, size: 14),
+                  label: const Text('1x À Vista', style: TextStyle(fontSize: 11)),
+                  onPressed: () => provider.gerarParcelasAutomaticas(1),
+                ),
+                ActionChip(
+                  label: const Text('2x', style: TextStyle(fontSize: 11)),
+                  onPressed: () => provider.gerarParcelasAutomaticas(2),
+                ),
+                ActionChip(
+                  label: const Text('3x', style: TextStyle(fontSize: 11)),
+                  onPressed: () => provider.gerarParcelasAutomaticas(3),
+                ),
+                ActionChip(
+                  label: const Text('4x', style: TextStyle(fontSize: 11)),
+                  onPressed: () => provider.gerarParcelasAutomaticas(4),
+                ),
+                ActionChip(
+                  label: const Text('5x', style: TextStyle(fontSize: 11)),
+                  onPressed: () => provider.gerarParcelasAutomaticas(5),
+                ),
+                ActionChip(
+                  label: const Text('6x', style: TextStyle(fontSize: 11)),
+                  onPressed: () => provider.gerarParcelasAutomaticas(6),
+                ),
+                ActionChip(
+                  label: const Text('10x', style: TextStyle(fontSize: 11)),
+                  onPressed: () => provider.gerarParcelasAutomaticas(10),
+                ),
+                ActionChip(
+                  label: const Text('12x', style: TextStyle(fontSize: 11)),
+                  onPressed: () => provider.gerarParcelasAutomaticas(12),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.tune, size: 14),
+                  label: const Text('Outras...', style: TextStyle(fontSize: 11)),
+                  onPressed: () => _abrirDialogGerarParcelas(context, provider),
                 ),
               ],
             ),
@@ -466,45 +516,123 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Column(
-                  children: provider.parcelas.asMap().entries.map((entry) {
-                    final idx = entry.key;
-                    final p = entry.value;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(4),
+                  children: [
+                    ...provider.parcelas.asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final p = entry.value;
+                      final rotulo = (p.descricao != null && p.descricao!.trim().isNotEmpty)
+                          ? p.descricao!
+                          : '${p.numero}ª Parcela';
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                rotulo,
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                            child: Text(
-                              '${p.numero}ª Parcela',
-                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            const SizedBox(width: 12),
+                            Text(
+                              Formatters.formatCurrency(p.valor),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             ),
+                            const Spacer(),
+                            const Icon(Icons.calendar_today, size: 14, color: AppColors.textSecondary),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Venc: ${Formatters.formatDate(p.vencimento)}',
+                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                              tooltip: 'Editar Parcela',
+                              onPressed: () => _abrirModalParcela(context, provider, index: idx, parcela: p),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
+                              tooltip: 'Excluir Parcela',
+                              onPressed: () => provider.removeParcela(idx),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    const Divider(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Total Parcelado: ${Formatters.formatCurrency(provider.totalParcelas)}',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 12),
+                            if (provider.saldoRestanteParcelas.abs() <= 0.01)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.success.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: AppColors.success, width: 0.5),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.check_circle, size: 14, color: AppColors.success),
+                                    SizedBox(width: 4),
+                                    Text('Confere com o Total', style: TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              )
+                            else
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.warning.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: AppColors.warning, width: 0.5),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.info_outline, size: 14, color: AppColors.warning),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Diferença: ${Formatters.formatCurrency(provider.saldoRestanteParcelas)}',
+                                      style: const TextStyle(fontSize: 11, color: AppColors.warning, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (provider.saldoRestanteParcelas.abs() > 0.01)
+                          TextButton.icon(
+                            style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                            icon: const Icon(Icons.balance, size: 16),
+                            label: const Text('Dividir Igualmente', style: TextStyle(fontSize: 11)),
+                            onPressed: () => provider.distribuirSaldoIgualmente(),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            Formatters.formatCurrency(p.valor),
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                          ),
-                          const Spacer(),
-                          const Icon(Icons.calendar_today, size: 14, color: AppColors.textSecondary),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Venc: ${Formatters.formatDate(p.vencimento)}',
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
-                            onPressed: () => provider.removeParcela(idx),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                ),
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('+ Adicionar Mais Uma Parcela'),
+                onPressed: () => _abrirModalParcela(context, provider),
               ),
             ],
             const SizedBox(height: 12),
@@ -787,6 +915,221 @@ class _CalculadoraViewState extends State<CalculadoraView> {
             },
             icon: const Icon(Icons.send, color: Colors.white),
             label: const Text('Disparar WhatsApp', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _abrirModalParcela(
+    BuildContext context,
+    OrcamentoProvider provider, {
+    int? index,
+    OrcamentoParcela? parcela,
+  }) {
+    final isEditing = index != null && parcela != null;
+    final numeroController = TextEditingController(
+      text: (parcela?.numero ?? (provider.parcelas.length + 1)).toString(),
+    );
+    final descricaoController = TextEditingController(
+      text: parcela?.descricao ?? '',
+    );
+
+    double valorInicial;
+    if (parcela != null) {
+      valorInicial = parcela.valor;
+    } else if (provider.saldoRestanteParcelas > 0) {
+      valorInicial = provider.saldoRestanteParcelas;
+    } else if (provider.parcelas.isNotEmpty) {
+      valorInicial = double.parse((provider.valorTotalRascunho / (provider.parcelas.length + 1)).toStringAsFixed(2));
+    } else {
+      valorInicial = provider.valorTotalRascunho;
+    }
+    final valorController = TextEditingController(
+      text: Formatters.formatDecimal(valorInicial),
+    );
+
+    DateTime dataVencimento;
+    if (parcela != null) {
+      try {
+        dataVencimento = DateTime.parse(parcela.vencimento);
+      } catch (_) {
+        dataVencimento = DateTime.now().add(const Duration(days: 30));
+      }
+    } else if (provider.parcelas.isNotEmpty) {
+      try {
+        final ultimaData = DateTime.parse(provider.parcelas.last.vencimento);
+        dataVencimento = ultimaData.add(const Duration(days: 30));
+      } catch (_) {
+        dataVencimento = DateTime.now().add(Duration(days: 30 * (provider.parcelas.length + 1)));
+      }
+    } else {
+      dataVencimento = DateTime.now().add(const Duration(days: 30));
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => AlertDialog(
+          title: Text(isEditing ? 'Editar Parcela #${parcela.numero}' : 'Adicionar Nova Parcela'),
+          content: SizedBox(
+            width: 420,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 90,
+                        child: TextFormField(
+                          controller: numeroController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Nº Parcela',
+                            prefixIcon: Icon(Icons.tag, size: 16),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: descricaoController,
+                          decoration: const InputDecoration(
+                            labelText: 'Identificação (opcional)',
+                            hintText: 'Ex: Entrada, 2ª Parcela, Quitação',
+                            prefixIcon: Icon(Icons.label_outline, size: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: valorController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: r'Valor da Parcela (R$)',
+                      prefixIcon: Icon(Icons.attach_money),
+                      helperText: 'Digite livremente o valor da parcela',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: dataVencimento,
+                        firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(const Duration(days: 3650)),
+                      );
+                      if (picked != null) {
+                        setModalState(() {
+                          dataVencimento = picked;
+                        });
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Data de Vencimento',
+                        prefixIcon: Icon(Icons.calendar_month),
+                        suffixIcon: Icon(Icons.arrow_drop_down),
+                      ),
+                      child: Text(
+                        Formatters.formatDate(dataVencimento),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              icon: const Icon(Icons.check, size: 18),
+              label: Text(isEditing ? 'Atualizar Parcela' : 'Adicionar Parcela'),
+              onPressed: () {
+                final numero = int.tryParse(numeroController.text) ?? (index != null ? index + 1 : provider.parcelas.length + 1);
+                final valor = Formatters.parseDouble(valorController.text);
+                final desc = descricaoController.text.trim();
+                final vencStr = Formatters.toIsoDate(dataVencimento);
+
+                final novaParcela = OrcamentoParcela(
+                  numero: numero,
+                  valor: valor,
+                  vencimento: vencStr,
+                  descricao: desc.isNotEmpty ? desc : null,
+                );
+
+                if (isEditing) {
+                  provider.updateParcela(index, novaParcela);
+                } else {
+                  provider.addParcela(novaParcela);
+                }
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _abrirDialogGerarParcelas(BuildContext context, OrcamentoProvider provider) {
+    final qtdController = TextEditingController(text: '5');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Gerar Parcelas em Lote'),
+        content: SizedBox(
+          width: 350,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Informe a quantidade de parcelas que deseja gerar. O valor total do orçamento será dividido igualmente.',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: qtdController,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Quantidade de Parcelas',
+                  prefixIcon: Icon(Icons.format_list_numbered),
+                  hintText: 'Ex: 5, 6, 8, 10, 12...',
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final qtd = int.tryParse(qtdController.text) ?? 0;
+              if (qtd > 0) {
+                provider.gerarParcelasAutomaticas(qtd);
+                Navigator.of(ctx).pop();
+              }
+            },
+            child: const Text('Gerar Parcelas'),
           ),
         ],
       ),
