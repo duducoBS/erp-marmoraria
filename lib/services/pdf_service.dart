@@ -165,17 +165,28 @@ class PdfService {
                 // Linhas de Itens
                 ...orcamento.itens.map((item) {
                   final perdaStr = '+${Formatters.formatDecimal(item.perdaPercentual, decimals: 0)}%';
-                  final medidasStr = '${Formatters.formatDecimal(item.largura)} x ${Formatters.formatDecimal(item.comprimento)}m (x${item.quantidade})';
+                  final medidasStr = item.largura > 0 && item.comprimento > 0
+                      ? '${Formatters.formatDecimal(item.largura)} x ${Formatters.formatDecimal(item.comprimento)}m (x${item.quantidade})'
+                      : 'Qtd: ${item.quantidade}';
                   final acabamentoStr = item.acabamentoNome != null
                       ? '${item.acabamentoNome!} (${item.acabamentoQuantidade > 0 ? Formatters.formatDecimal(item.acabamentoQuantidade) : ""})'
                       : 'Padrão Reto';
 
+                  final m2Text = item.tipoCalculo == 'fixo'
+                      ? (item.m2Total > 0 ? '${Formatters.formatDecimal(item.m2Total)} m² (Fixo)' : 'Valor Fixo')
+                      : '${Formatters.formatDecimal(item.m2Total)} m² ($perdaStr)';
+
+                  final materialLabel = item.materialNome ?? 'Material #${item.materialId}';
+                  final materialWithPrice = item.tipoCalculo == 'metro' && item.precoMetro > 0
+                      ? '$materialLabel\n(${Formatters.formatCurrency(item.precoMetro)}/m²)'
+                      : (item.tipoCalculo == 'fixo' ? '$materialLabel\n(Preço Fixo)' : materialLabel);
+
                   return pw.TableRow(
                     children: [
                       _tableCell(item.ambiente),
-                      _tableCell(item.materialNome ?? 'Material #${item.materialId}'),
+                      _tableCell(materialWithPrice),
                       _tableCell(medidasStr),
-                      _tableCell('${Formatters.formatDecimal(item.m2Total)} m² ($perdaStr)'),
+                      _tableCell(m2Text),
                       _tableCell(acabamentoStr),
                       _tableCell(Formatters.formatCurrency(item.valorParcial), align: pw.TextAlign.right),
                     ],

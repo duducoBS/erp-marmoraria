@@ -32,7 +32,10 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
   late TextEditingController _quantidadeController;
   late TextEditingController _perdaController;
   late TextEditingController _acabamentoQtdController;
+  late TextEditingController _precoMetroController;
+  late TextEditingController _valorFixoController;
 
+  String _tipoCalculo = 'metro'; // 'metro' ou 'fixo'
   MaterialItem? _materialSelecionado;
   AcabamentoServico? _acabamentoSelecionado;
 
@@ -55,6 +58,7 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
     super.initState();
     final item = widget.itemInicial;
 
+    _tipoCalculo = item?.tipoCalculo ?? 'metro';
     _ambienteController = TextEditingController(text: item?.ambiente ?? 'Cozinha');
     _larguraController = TextEditingController(text: item != null ? Formatters.formatDecimal(item.largura) : '0,60');
     _comprimentoController = TextEditingController(text: item != null ? Formatters.formatDecimal(item.comprimento) : '2,00');
@@ -73,9 +77,21 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
           orElse: () => widget.acabamentos.first,
         );
       }
+      _precoMetroController = TextEditingController(
+        text: item.precoMetro > 0
+            ? Formatters.formatDecimal(item.precoMetro)
+            : Formatters.formatDecimal(_materialSelecionado?.precoM2Venda ?? 0.0),
+      );
+      _valorFixoController = TextEditingController(
+        text: item.valorFixo > 0 ? Formatters.formatDecimal(item.valorFixo) : '0,00',
+      );
     } else {
       if (widget.materiais.isNotEmpty) _materialSelecionado = widget.materiais.first;
       if (widget.acabamentos.isNotEmpty) _acabamentoSelecionado = widget.acabamentos.first;
+      _precoMetroController = TextEditingController(
+        text: Formatters.formatDecimal(_materialSelecionado?.precoM2Venda ?? 580.0),
+      );
+      _valorFixoController = TextEditingController(text: '0,00');
     }
 
     _calcularValores();
@@ -94,13 +110,16 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
       perdaPercentual: perda,
     );
 
-    final precoM2 = _materialSelecionado?.precoM2Venda ?? 0.0;
+    final precoM2 = Formatters.parseDouble(_precoMetroController.text);
+    final valorFixo = Formatters.parseDouble(_valorFixoController.text);
     final valorAcabamentoUnit = _acabamentoSelecionado?.valor ?? 0.0;
     final qtdAcabamento = Formatters.parseDouble(_acabamentoQtdController.text);
 
     _valorParcial = OrcamentoItem.calcularValorParcial(
+      tipoCalculo: _tipoCalculo,
       m2Total: _m2Total,
       precoM2Venda: precoM2,
+      valorFixo: valorFixo,
       acabamentoValorUnitario: valorAcabamentoUnit,
       acabamentoQuantidade: qtdAcabamento,
     );
@@ -116,6 +135,8 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
     _quantidadeController.dispose();
     _perdaController.dispose();
     _acabamentoQtdController.dispose();
+    _precoMetroController.dispose();
+    _valorFixoController.dispose();
     super.dispose();
   }
 
@@ -157,6 +178,97 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Seletor de Modo de Precificação
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceVariant,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(8),
+                                  onTap: () {
+                                    setState(() {
+                                      _tipoCalculo = 'metro';
+                                      _calcularValores();
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: _tipoCalculo == 'metro' ? AppColors.primary : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.square_foot,
+                                          size: 18,
+                                          color: _tipoCalculo == 'metro' ? Colors.white : AppColors.textSecondary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Por Metro Quadrado (m²)',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: _tipoCalculo == 'metro' ? Colors.white : AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(8),
+                                  onTap: () {
+                                    setState(() {
+                                      _tipoCalculo = 'fixo';
+                                      _calcularValores();
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: _tipoCalculo == 'fixo' ? AppColors.secondary : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.sell_outlined,
+                                          size: 18,
+                                          color: _tipoCalculo == 'fixo' ? Colors.white : AppColors.textSecondary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Valor Fixo Fechado',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: _tipoCalculo == 'fixo' ? Colors.white : AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
                         // Ambiente
                         const Text('Ambiente ou Local da Peça:', style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 6),
@@ -185,34 +297,102 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Seleção de Material
-                        const Text('Material / Rocha Ornamental:', style: TextStyle(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 6),
-                        DropdownButtonFormField<MaterialItem>(
-                          isExpanded: true,
-                          initialValue: _materialSelecionado,
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.layers_outlined),
-                          ),
-                          items: widget.materiais.map((mat) {
-                            return DropdownMenuItem<MaterialItem>(
-                              value: mat,
-                              child: Text(
-                                '${mat.nome} (${Formatters.formatCurrency(mat.precoM2Venda)}/m²)',
-                                overflow: TextOverflow.ellipsis,
+                        // Seleção de Material e Preço (M² ou Fixo)
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isCompact = constraints.maxWidth < 450;
+                            final materialDropdown = DropdownButtonFormField<MaterialItem>(
+                              isExpanded: true,
+                              initialValue: _materialSelecionado,
+                              decoration: InputDecoration(
+                                labelText: _tipoCalculo == 'metro'
+                                    ? 'Material / Rocha Ornamental'
+                                    : 'Material Utilizado (Referência)',
+                                prefixIcon: const Icon(Icons.layers_outlined),
                               ),
+                              items: widget.materiais.map((mat) {
+                                return DropdownMenuItem<MaterialItem>(
+                                  value: mat,
+                                  child: Text(
+                                    _tipoCalculo == 'metro'
+                                        ? '${mat.nome} (Catálogo: ${Formatters.formatCurrency(mat.precoM2Venda)}/m²)'
+                                        : mat.nome,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                _materialSelecionado = val;
+                                if (val != null && _tipoCalculo == 'metro') {
+                                  _precoMetroController.text = Formatters.formatDecimal(val.precoM2Venda);
+                                }
+                                _calcularValores();
+                              },
                             );
-                          }).toList(),
-                          onChanged: (val) {
-                            _materialSelecionado = val;
-                            _calcularValores();
+
+                            final priceField = _tipoCalculo == 'metro'
+                                ? TextFormField(
+                                    controller: _precoMetroController,
+                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    decoration: const InputDecoration(
+                                      labelText: r'Preço m² (R$) *',
+                                      hintText: '580,00',
+                                      prefixIcon: Icon(Icons.attach_money),
+                                    ),
+                                    onChanged: (_) => _calcularValores(),
+                                    validator: (val) {
+                                      if (_tipoCalculo == 'metro' && (val == null || val.trim().isEmpty)) {
+                                        return 'Informe o valor';
+                                      }
+                                      return null;
+                                    },
+                                  )
+                                : TextFormField(
+                                    controller: _valorFixoController,
+                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    decoration: const InputDecoration(
+                                      labelText: r'Valor Fixo da Peça (R$) *',
+                                      hintText: '850,00',
+                                      prefixIcon: Icon(Icons.sell_outlined),
+                                    ),
+                                    onChanged: (_) => _calcularValores(),
+                                    validator: (val) {
+                                      if (_tipoCalculo == 'fixo' &&
+                                          (val == null || val.trim().isEmpty || Formatters.parseDouble(val) <= 0)) {
+                                        return 'Informe o valor fixo';
+                                      }
+                                      return null;
+                                    },
+                                  );
+
+                            if (isCompact) {
+                              return Column(
+                                children: [
+                                  materialDropdown,
+                                  const SizedBox(height: 10),
+                                  priceField,
+                                ],
+                              );
+                            } else {
+                              return Row(
+                                children: [
+                                  Expanded(flex: 3, child: materialDropdown),
+                                  const SizedBox(width: 12),
+                                  Expanded(flex: 2, child: priceField),
+                                ],
+                              );
+                            }
                           },
                         ),
                         const SizedBox(height: 16),
 
                         // Dimensões (Largura, Comprimento, Quantidade, Perda %)
-                        // Dimensões (Largura, Comprimento, Quantidade, Perda %)
-                        const Text('Dimensões e Fator de Perda:', style: TextStyle(fontWeight: FontWeight.w600)),
+                        Text(
+                          _tipoCalculo == 'metro'
+                              ? 'Dimensões e Fator de Perda:'
+                              : 'Dimensões Técnicas / Medidas para Corte:',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
                         const SizedBox(height: 6),
                         LayoutBuilder(
                           builder: (context, constraints) {
@@ -238,7 +418,11 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                             final fieldPerda = TextFormField(
                               controller: _perdaController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(labelText: 'Perda (%)', hintText: '10'),
+                              decoration: InputDecoration(
+                                labelText: 'Perda (%)',
+                                hintText: '10',
+                                enabled: _tipoCalculo == 'metro',
+                              ),
                               onChanged: (_) => _calcularValores(),
                             );
 
@@ -353,24 +537,45 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                           ),
                           child: Column(
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('Área com Fator de Perda:', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                                  Text(Formatters.formatM2(_m2Total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('Fórmula Aplicada:', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
-                                  Text(
-                                    'L × C × Qtd × (1 + ${_perdaController.text}%)',
-                                    style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace'),
-                                  ),
-                                ],
-                              ),
+                              if (_tipoCalculo == 'metro') ...[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Área com Fator de Perda:', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                    Text(Formatters.formatM2(_m2Total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Fórmula Aplicada:', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                    Text(
+                                      '${Formatters.formatDecimal(_m2Total)} m² × ${Formatters.formatCurrency(Formatters.parseDouble(_precoMetroController.text))}',
+                                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace'),
+                                    ),
+                                  ],
+                                ),
+                              ] else ...[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Modalidade de Preço:', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                    const Text('VALOR FIXO / FECHADO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.secondary)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Valor Base da Peça:', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                    Text(
+                                      Formatters.formatCurrency(Formatters.parseDouble(_valorFixoController.text)),
+                                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                               const Divider(height: 16),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -428,6 +633,9 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                             acabamentoNome: _acabamentoSelecionado?.nome,
                             acabamentoQuantidade: Formatters.parseDouble(_acabamentoQtdController.text),
                             valorParcial: _valorParcial,
+                            tipoCalculo: _tipoCalculo,
+                            precoMetro: Formatters.parseDouble(_precoMetroController.text),
+                            valorFixo: Formatters.parseDouble(_valorFixoController.text),
                           );
 
                           widget.onSalvar(item);

@@ -23,8 +23,18 @@ class WhatsAppService {
       buffer.writeln('');
       buffer.writeln('*${i + 1}. ${item.ambiente}*');
       buffer.writeln('• Rocha/Material: ${item.materialNome ?? "Material #${item.materialId}"}');
-      buffer.writeln('• Medidas: ${Formatters.formatDecimal(item.largura)}m x ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade})');
-      buffer.writeln('• Área c/ perda: ${Formatters.formatM2(item.m2Total)} (+${Formatters.formatDecimal(item.perdaPercentual, decimals: 0)}%)');
+      if (item.tipoCalculo == 'fixo') {
+        buffer.writeln('• Modalidade: Valor Fixo da Peça (${Formatters.formatCurrency(item.valorFixo)})');
+        if (item.largura > 0 && item.comprimento > 0) {
+          buffer.writeln('• Medidas: ${Formatters.formatDecimal(item.largura)}m x ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade})');
+        }
+      } else {
+        buffer.writeln('• Medidas: ${Formatters.formatDecimal(item.largura)}m x ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade})');
+        buffer.writeln('• Área c/ perda: ${Formatters.formatM2(item.m2Total)} (+${Formatters.formatDecimal(item.perdaPercentual, decimals: 0)}%)');
+        if (item.precoMetro > 0) {
+          buffer.writeln('• Preço m²: ${Formatters.formatCurrency(item.precoMetro)}/m²');
+        }
+      }
       if (item.acabamentoNome != null) {
         buffer.writeln('• Acabamento: ${item.acabamentoNome}');
       }

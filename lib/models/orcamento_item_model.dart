@@ -11,6 +11,9 @@ class OrcamentoItem {
   final int? acabamentoId;
   final double acabamentoQuantidade;
   final double valorParcial;
+  final String tipoCalculo; // 'metro' ou 'fixo'
+  final double precoMetro; // Preço do m² editável no orçamento
+  final double valorFixo; // Preço fixo da peça quando tipoCalculo == 'fixo'
 
   // Campos extras para exibição (joins)
   final String? materialNome;
@@ -30,6 +33,9 @@ class OrcamentoItem {
     this.acabamentoId,
     this.acabamentoQuantidade = 0.0,
     required this.valorParcial,
+    this.tipoCalculo = 'metro',
+    this.precoMetro = 0.0,
+    this.valorFixo = 0.0,
     this.materialNome,
     this.acabamentoNome,
     this.acabamentoTipoCobranca,
@@ -51,16 +57,20 @@ class OrcamentoItem {
     return double.parse(comPerda.toStringAsFixed(4));
   }
 
-  /// Cálculo do valor parcial do item
+  /// Cálculo do valor parcial do item (por m² com preço customizável ou valor fixo)
   static double calcularValorParcial({
+    String tipoCalculo = 'metro',
     required double m2Total,
     required double precoM2Venda,
+    double valorFixo = 0.0,
     double acabamentoValorUnitario = 0.0,
     double acabamentoQuantidade = 0.0,
   }) {
-    final valorMaterial = m2Total * precoM2Venda;
+    final double baseItem = (tipoCalculo == 'fixo')
+        ? valorFixo
+        : (m2Total * precoM2Venda);
     final valorAcabamento = acabamentoValorUnitario * acabamentoQuantidade;
-    final total = valorMaterial + valorAcabamento;
+    final total = baseItem + valorAcabamento;
     return double.parse(total.toStringAsFixed(2));
   }
 
@@ -78,6 +88,9 @@ class OrcamentoItem {
       'acabamento_id': acabamentoId,
       'acabamento_quantidade': acabamentoQuantidade,
       'valor_parcial': valorParcial,
+      'tipo_calculo': tipoCalculo,
+      'preco_metro': precoMetro,
+      'valor_fixo': valorFixo,
     };
   }
 
@@ -95,6 +108,9 @@ class OrcamentoItem {
       acabamentoId: map['acabamento_id'] as int?,
       acabamentoQuantidade: (map['acabamento_quantidade'] as num?)?.toDouble() ?? 0.0,
       valorParcial: (map['valor_parcial'] as num?)?.toDouble() ?? 0.0,
+      tipoCalculo: map['tipo_calculo'] as String? ?? 'metro',
+      precoMetro: (map['preco_metro'] as num?)?.toDouble() ?? 0.0,
+      valorFixo: (map['valor_fixo'] as num?)?.toDouble() ?? 0.0,
       materialNome: map['material_nome'] as String?,
       acabamentoNome: map['acabamento_nome'] as String?,
       acabamentoTipoCobranca: map['acabamento_tipo_cobranca'] as String?,
@@ -114,6 +130,9 @@ class OrcamentoItem {
     int? acabamentoId,
     double? acabamentoQuantidade,
     double? valorParcial,
+    String? tipoCalculo,
+    double? precoMetro,
+    double? valorFixo,
     String? materialNome,
     String? acabamentoNome,
     String? acabamentoTipoCobranca,
@@ -131,6 +150,9 @@ class OrcamentoItem {
       acabamentoId: acabamentoId ?? this.acabamentoId,
       acabamentoQuantidade: acabamentoQuantidade ?? this.acabamentoQuantidade,
       valorParcial: valorParcial ?? this.valorParcial,
+      tipoCalculo: tipoCalculo ?? this.tipoCalculo,
+      precoMetro: precoMetro ?? this.precoMetro,
+      valorFixo: valorFixo ?? this.valorFixo,
       materialNome: materialNome ?? this.materialNome,
       acabamentoNome: acabamentoNome ?? this.acabamentoNome,
       acabamentoTipoCobranca: acabamentoTipoCobranca ?? this.acabamentoTipoCobranca,

@@ -25,8 +25,9 @@ class DatabaseHelper {
       return await databaseFactory.openDatabase(
         filePath,
         options: OpenDatabaseOptions(
-          version: 1,
+          version: 2,
           onCreate: _createDB,
+          onUpgrade: _onUpgrade,
           onConfigure: _onConfigure,
         ),
       );
@@ -47,8 +48,9 @@ class DatabaseHelper {
       return await databaseFactory.openDatabase(
         dbPath,
         options: OpenDatabaseOptions(
-          version: 1,
+          version: 2,
           onCreate: _createDB,
+          onUpgrade: _onUpgrade,
           onConfigure: _onConfigure,
         ),
       );
@@ -58,8 +60,9 @@ class DatabaseHelper {
       final fullPath = p.join(dbPath, filePath);
       return await openDatabase(
         fullPath,
-        version: 1,
+        version: 2,
         onCreate: _createDB,
+        onUpgrade: _onUpgrade,
         onConfigure: _onConfigure,
       );
     }
@@ -68,6 +71,21 @@ class DatabaseHelper {
   Future<void> _onConfigure(Database db) async {
     // Ativa chaves estrangeiras no SQLite
     await db.execute('PRAGMA foreign_keys = ON');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Migração para versão 2: adicionar tipo_calculo, preco_metro e valor_fixo em orcamento_itens
+      try {
+        await db.execute("ALTER TABLE orcamento_itens ADD COLUMN tipo_calculo TEXT DEFAULT 'metro'");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE orcamento_itens ADD COLUMN preco_metro REAL DEFAULT 0");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE orcamento_itens ADD COLUMN valor_fixo REAL DEFAULT 0");
+      } catch (_) {}
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -136,6 +154,9 @@ class DatabaseHelper {
         acabamento_id INTEGER,
         acabamento_quantidade REAL DEFAULT 0,
         valor_parcial REAL NOT NULL,
+        tipo_calculo TEXT DEFAULT 'metro',
+        preco_metro REAL DEFAULT 0,
+        valor_fixo REAL DEFAULT 0,
         FOREIGN KEY (orcamento_id) REFERENCES orcamentos(id) ON DELETE CASCADE,
         FOREIGN KEY (material_id) REFERENCES materiais(id) ON DELETE RESTRICT,
         FOREIGN KEY (acabamento_id) REFERENCES acabamentos_servicos(id) ON DELETE SET NULL
@@ -218,6 +239,9 @@ class DatabaseHelper {
       'acabamento_id': 1, // 45 graus (R$ 60/m)
       'acabamento_quantidade': 3.20,
       'valor_parcial': 1353.60,
+      'tipo_calculo': 'metro',
+      'preco_metro': 550.00,
+      'valor_fixo': 0.0,
     });
 
     await db.insert('orcamento_itens', {
@@ -232,6 +256,9 @@ class DatabaseHelper {
       'acabamento_id': 1, // 45 graus (R$ 60/m)
       'acabamento_quantidade': 4.00,
       'valor_parcial': 1329.00,
+      'tipo_calculo': 'metro',
+      'preco_metro': 550.00,
+      'valor_fixo': 0.0,
     });
 
     // OS Demonstrativa

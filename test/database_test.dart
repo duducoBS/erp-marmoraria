@@ -75,7 +75,10 @@ void main() {
               perda_percentual REAL NOT NULL,
               acabamento_id INTEGER,
               acabamento_quantidade REAL DEFAULT 0,
-              valor_parcial REAL NOT NULL
+              valor_parcial REAL NOT NULL,
+              tipo_calculo TEXT DEFAULT 'metro',
+              preco_metro REAL DEFAULT 0,
+              valor_fixo REAL DEFAULT 0
             )
           ''');
         },
@@ -111,13 +114,23 @@ void main() {
     final acabamentoId = await db.insert('acabamentos_servicos', acabamento.toMap());
     expect(acabamentoId, equals(1));
 
-    // Inserção de Orçamento e Itens
+    // Inserção de Orçamento e Itens (1 por m2 com preco customizado e 1 com valor fixo)
     final m2 = OrcamentoItem.calcularM2Total(largura: 0.6, comprimento: 3.0, quantidade: 1, perdaPercentual: 10);
-    final totalItem = OrcamentoItem.calcularValorParcial(
+    final totalItem1 = OrcamentoItem.calcularValorParcial(
+      tipoCalculo: 'metro',
       m2Total: m2,
-      precoM2Venda: 550.0,
+      precoM2Venda: 520.0, // preço livre customizado
       acabamentoValorUnitario: 60.0,
       acabamentoQuantidade: 3.0,
+    );
+
+    final totalItem2 = OrcamentoItem.calcularValorParcial(
+      tipoCalculo: 'fixo',
+      m2Total: 0.0,
+      precoM2Venda: 0.0,
+      valorFixo: 850.0, // valor fixo fechado
+      acabamentoValorUnitario: 0.0,
+      acabamentoQuantidade: 0.0,
     );
 
     final orcamentoId = await db.insert('orcamentos', {
@@ -125,8 +138,8 @@ void main() {
       'data_criacao': '2026-09-17',
       'data_validade': '2026-10-02',
       'status': 'Aprovado',
-      'valor_total': totalItem,
-      'observacoes': 'Teste de persistência SQLite com FFI',
+      'valor_total': totalItem1 + totalItem2,
+      'observacoes': 'Teste com item livre m2 e item valor fixo',
     });
     expect(orcamentoId, equals(1));
 
@@ -141,7 +154,27 @@ void main() {
       'perda_percentual': 10.0,
       'acabamento_id': acabamentoId,
       'acabamento_quantidade': 3.0,
-      'valor_parcial': totalItem,
+      'valor_parcial': totalItem1,
+      'tipo_calculo': 'metro',
+      'preco_metro': 520.0,
+      'valor_fixo': 0.0,
+    });
+
+    await db.insert('orcamento_itens', {
+      'orcamento_id': orcamentoId,
+      'ambiente': 'Lavabo Cuba Esculpida',
+      'material_id': materialId,
+      'largura': 0.5,
+      'comprimento': 0.8,
+      'quantidade': 1,
+      'm2_total': 0.44,
+      'perda_percentual': 10.0,
+      'acabamento_id': null,
+      'acabamento_quantidade': 0.0,
+      'valor_parcial': totalItem2,
+      'tipo_calculo': 'fixo',
+      'preco_metro': 0.0,
+      'valor_fixo': 850.0,
     });
 
     // Consulta com Join
@@ -151,11 +184,15 @@ void main() {
       LEFT JOIN materiais m ON i.material_id = m.id
       LEFT JOIN acabamentos_servicos a ON i.acabamento_id = a.id
       WHERE i.orcamento_id = ?
+      ORDER BY i.id ASC
     ''', [orcamentoId]);
 
-    expect(itens.length, equals(1));
-    expect(itens.first['material_nome'], equals('Granito São Gabriel'));
-    expect(itens.first['acabamento_nome'], equals('Meia Esquadria 45º'));
+    expect(itens.length, equals(2));
+    expect(itens[0]['material_nome'], equals('Granito São Gabriel'));
+    expect(itens[0]['tipo_calculo'], equals('metro'));
+    expect(itens[0]['preco_metro'], equals(520.0));
+    expect(itens[1]['tipo_calculo'], equals('fixo'));
+    expect(itens[1]['valor_fixo'], equals(850.0));
 
     await db.close();
   });

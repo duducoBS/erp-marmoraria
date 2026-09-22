@@ -319,16 +319,34 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                           side: BorderSide.none,
                           padding: EdgeInsets.zero,
                         ),
+                        if (item.tipoCalculo == 'fixo') ...[
+                          const SizedBox(width: 6),
+                          Chip(
+                            label: const Text(
+                              'Preço Fixo',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary),
+                            ),
+                            backgroundColor: AppColors.secondary.withValues(alpha: 0.15),
+                            side: BorderSide.none,
+                            padding: EdgeInsets.zero,
+                          ),
+                        ],
                       ],
                     ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 4),
-                        Text(
-                          'Medidas: ${Formatters.formatDecimal(item.largura)}m × ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade}) • Área c/ perda: ${Formatters.formatM2(item.m2Total)} (+${Formatters.formatDecimal(item.perdaPercentual, decimals: 0)}%)',
-                          style: const TextStyle(fontSize: 13),
-                        ),
+                        if (item.tipoCalculo == 'fixo')
+                          Text(
+                            'Valor Fixo: ${Formatters.formatCurrency(item.valorFixo)}${item.largura > 0 && item.comprimento > 0 ? " • Medidas: ${Formatters.formatDecimal(item.largura)}m × ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade})" : ""}',
+                            style: const TextStyle(fontSize: 13),
+                          )
+                        else
+                          Text(
+                            'Medidas: ${Formatters.formatDecimal(item.largura)}m × ${Formatters.formatDecimal(item.comprimento)}m (Qtd: ${item.quantidade}) • Área c/ perda: ${Formatters.formatM2(item.m2Total)} • ${Formatters.formatCurrency(item.precoMetro)}/m²',
+                            style: const TextStyle(fontSize: 13),
+                          ),
                         if (item.acabamentoNome != null)
                           Text(
                             'Acabamento: ${item.acabamentoNome} (${Formatters.formatDecimal(item.acabamentoQuantidade)})',

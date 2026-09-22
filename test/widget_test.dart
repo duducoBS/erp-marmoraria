@@ -114,5 +114,71 @@ void main() {
       expect(somatorio, equals(2682.60));
       expect(Formatters.formatCurrency(somatorio), contains('2.682,60'));
     });
+
+    test('Cálculo com inserção livre do valor do m²', () {
+      // Bancada 0.60m x 2.00m = 1.20 m² -> Com 10% perda = 1.32 m²
+      // Usuário digita livremente R$ 450,00/m² (em vez de preço padrão)
+      final m2 = OrcamentoItem.calcularM2Total(
+        largura: 0.60,
+        comprimento: 2.00,
+        quantidade: 1,
+        perdaPercentual: 10.0,
+      );
+      final total = OrcamentoItem.calcularValorParcial(
+        tipoCalculo: 'metro',
+        m2Total: m2,
+        precoM2Venda: 450.0, // preço livre
+        acabamentoValorUnitario: 50.0,
+        acabamentoQuantidade: 2.0,
+      );
+      // 1.32 * 450 = 594.00 + (2.0 * 50 = 100.00) = 694.00
+      expect(total, equals(694.00));
+    });
+
+    test('Cálculo de item com Valor Fixo por peça', () {
+      // Peça fechada com valor fixo de R$ 1.200,00
+      final totalFixo = OrcamentoItem.calcularValorParcial(
+        tipoCalculo: 'fixo',
+        m2Total: 0.8,
+        precoM2Venda: 0.0,
+        valorFixo: 1200.00,
+        acabamentoValorUnitario: 80.0,
+        acabamentoQuantidade: 1.0,
+      );
+      // 1200.00 + 80.00 = 1280.00
+      expect(totalFixo, equals(1280.00));
+    });
+
+    test('Somatório de orçamento misto (m² livre + valor fixo)', () {
+      final itemM2 = OrcamentoItem(
+        ambiente: 'Cozinha',
+        materialId: 1,
+        largura: 0.60,
+        comprimento: 2.00,
+        quantidade: 1,
+        perdaPercentual: 10.0,
+        m2Total: 1.32,
+        tipoCalculo: 'metro',
+        precoMetro: 500.0,
+        valorParcial: 660.00, // 1.32 * 500
+      );
+
+      final itemFixo = OrcamentoItem(
+        ambiente: 'Nicho Banheiro',
+        materialId: 2,
+        largura: 0.30,
+        comprimento: 0.60,
+        quantidade: 1,
+        perdaPercentual: 10.0,
+        m2Total: 0.198,
+        tipoCalculo: 'fixo',
+        valorFixo: 350.00,
+        valorParcial: 350.00,
+      );
+
+      final totalOrcamento = itemM2.valorParcial + itemFixo.valorParcial;
+      expect(totalOrcamento, equals(1010.00));
+      expect(Formatters.formatCurrency(totalOrcamento), contains('1.010,00'));
+    });
   });
 }
