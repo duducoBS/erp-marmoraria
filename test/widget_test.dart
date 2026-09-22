@@ -180,5 +180,29 @@ void main() {
       expect(totalOrcamento, equals(1010.00));
       expect(Formatters.formatCurrency(totalOrcamento), contains('1.010,00'));
     });
+
+    test('OrcamentoItem suporta campo de descrição detalhada', () {
+      final item = OrcamentoItem(
+        ambiente: 'Bancada Cozinha',
+        materialId: 1,
+        largura: 0.60,
+        comprimento: 2.50,
+        quantidade: 1,
+        m2Total: 1.65,
+        valorParcial: 1200.00,
+        descricao: 'Bancada em L com cuba esculpida e frontão de 15cm',
+      );
+
+      expect(item.descricao, equals('Bancada em L com cuba esculpida e frontão de 15cm'));
+
+      final map = item.toMap();
+      expect(map['descricao'], equals('Bancada em L com cuba esculpida e frontão de 15cm'));
+
+      final fromMap = OrcamentoItem.fromMap(map);
+      expect(fromMap.descricao, equals('Bancada em L com cuba esculpida e frontão de 15cm'));
+
+      final modificado = item.copyWith(descricao: 'Alterado para furo de torneira duplo');
+      expect(modificado.descricao, equals('Alterado para furo de torneira duplo'));
+    });
   });
 }

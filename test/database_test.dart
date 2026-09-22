@@ -78,7 +78,8 @@ void main() {
               valor_parcial REAL NOT NULL,
               tipo_calculo TEXT DEFAULT 'metro',
               preco_metro REAL DEFAULT 0,
-              valor_fixo REAL DEFAULT 0
+              valor_fixo REAL DEFAULT 0,
+              descricao TEXT DEFAULT ''
             )
           ''');
         },
@@ -158,6 +159,7 @@ void main() {
       'tipo_calculo': 'metro',
       'preco_metro': 520.0,
       'valor_fixo': 0.0,
+      'descricao': 'Bancada com frontão 10cm',
     });
 
     await db.insert('orcamento_itens', {
@@ -175,6 +177,7 @@ void main() {
       'tipo_calculo': 'fixo',
       'preco_metro': 0.0,
       'valor_fixo': 850.0,
+      'descricao': 'Cuba esculpida com rampa oculta',
     });
 
     // Consulta com Join
@@ -191,8 +194,10 @@ void main() {
     expect(itens[0]['material_nome'], equals('Granito São Gabriel'));
     expect(itens[0]['tipo_calculo'], equals('metro'));
     expect(itens[0]['preco_metro'], equals(520.0));
+    expect(itens[0]['descricao'], equals('Bancada com frontão 10cm'));
     expect(itens[1]['tipo_calculo'], equals('fixo'));
     expect(itens[1]['valor_fixo'], equals(850.0));
+    expect(itens[1]['descricao'], equals('Cuba esculpida com rampa oculta'));
 
     await db.close();
   });

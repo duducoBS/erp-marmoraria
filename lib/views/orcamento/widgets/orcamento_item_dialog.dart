@@ -34,6 +34,7 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
   late TextEditingController _acabamentoQtdController;
   late TextEditingController _precoMetroController;
   late TextEditingController _valorFixoController;
+  late TextEditingController _descricaoController;
 
   String _tipoCalculo = 'metro'; // 'metro' ou 'fixo'
   MaterialItem? _materialSelecionado;
@@ -60,6 +61,7 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
 
     _tipoCalculo = item?.tipoCalculo ?? 'metro';
     _ambienteController = TextEditingController(text: item?.ambiente ?? 'Cozinha');
+    _descricaoController = TextEditingController(text: item?.descricao ?? '');
     _larguraController = TextEditingController(text: item != null ? Formatters.formatDecimal(item.largura) : '0,60');
     _comprimentoController = TextEditingController(text: item != null ? Formatters.formatDecimal(item.comprimento) : '2,00');
     _quantidadeController = TextEditingController(text: item != null ? item.quantidade.toString() : '1');
@@ -137,6 +139,7 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
     _acabamentoQtdController.dispose();
     _precoMetroController.dispose();
     _valorFixoController.dispose();
+    _descricaoController.dispose();
     super.dispose();
   }
 
@@ -294,6 +297,20 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                               validator: (val) => val == null || val.trim().isEmpty ? 'Informe o ambiente' : null,
                             );
                           },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Descrição detalhada da peça
+                        const Text('Descrição Detalhada da Peça / Observações (Opcional):', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: _descricaoController,
+                          maxLines: 2,
+                          minLines: 1,
+                          decoration: const InputDecoration(
+                            hintText: 'Ex: Bancada em L com cuba esculpida, frontão 15cm e furo torneira',
+                            prefixIcon: Icon(Icons.notes_outlined),
+                          ),
                         ),
                         const SizedBox(height: 16),
 
@@ -636,6 +653,7 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                             tipoCalculo: _tipoCalculo,
                             precoMetro: Formatters.parseDouble(_precoMetroController.text),
                             valorFixo: Formatters.parseDouble(_valorFixoController.text),
+                            descricao: _descricaoController.text.trim(),
                           );
 
                           widget.onSalvar(item);

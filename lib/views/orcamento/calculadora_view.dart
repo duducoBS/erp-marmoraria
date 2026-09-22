@@ -352,6 +352,17 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                             'Acabamento: ${item.acabamentoNome} (${Formatters.formatDecimal(item.acabamentoQuantidade)})',
                             style: const TextStyle(fontSize: 12, color: AppColors.secondary, fontWeight: FontWeight.w500),
                           ),
+                        if (item.descricao.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            item.descricao,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                     trailing: Row(

@@ -14,6 +14,7 @@ class OrcamentoItem {
   final String tipoCalculo; // 'metro' ou 'fixo'
   final double precoMetro; // Preço do m² editável no orçamento
   final double valorFixo; // Preço fixo da peça quando tipoCalculo == 'fixo'
+  final String descricao; // Detalhamento livre da peça/item
 
   // Campos extras para exibição (joins)
   final String? materialNome;
@@ -36,6 +37,7 @@ class OrcamentoItem {
     this.tipoCalculo = 'metro',
     this.precoMetro = 0.0,
     this.valorFixo = 0.0,
+    this.descricao = '',
     this.materialNome,
     this.acabamentoNome,
     this.acabamentoTipoCobranca,
@@ -91,6 +93,7 @@ class OrcamentoItem {
       'tipo_calculo': tipoCalculo,
       'preco_metro': precoMetro,
       'valor_fixo': valorFixo,
+      'descricao': descricao,
     };
   }
 
@@ -111,6 +114,7 @@ class OrcamentoItem {
       tipoCalculo: map['tipo_calculo'] as String? ?? 'metro',
       precoMetro: (map['preco_metro'] as num?)?.toDouble() ?? 0.0,
       valorFixo: (map['valor_fixo'] as num?)?.toDouble() ?? 0.0,
+      descricao: map['descricao'] as String? ?? '',
       materialNome: map['material_nome'] as String?,
       acabamentoNome: map['acabamento_nome'] as String?,
       acabamentoTipoCobranca: map['acabamento_tipo_cobranca'] as String?,
@@ -133,6 +137,7 @@ class OrcamentoItem {
     String? tipoCalculo,
     double? precoMetro,
     double? valorFixo,
+    String? descricao,
     String? materialNome,
     String? acabamentoNome,
     String? acabamentoTipoCobranca,
@@ -153,6 +158,7 @@ class OrcamentoItem {
       tipoCalculo: tipoCalculo ?? this.tipoCalculo,
       precoMetro: precoMetro ?? this.precoMetro,
       valorFixo: valorFixo ?? this.valorFixo,
+      descricao: descricao ?? this.descricao,
       materialNome: materialNome ?? this.materialNome,
       acabamentoNome: acabamentoNome ?? this.acabamentoNome,
       acabamentoTipoCobranca: acabamentoTipoCobranca ?? this.acabamentoTipoCobranca,

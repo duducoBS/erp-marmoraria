@@ -22,6 +22,9 @@ class WhatsAppService {
       final item = orcamento.itens[i];
       buffer.writeln('');
       buffer.writeln('*${i + 1}. ${item.ambiente}*');
+      if (item.descricao.isNotEmpty) {
+        buffer.writeln('• Detalhes: ${item.descricao}');
+      }
       buffer.writeln('• Rocha/Material: ${item.materialNome ?? "Material #${item.materialId}"}');
       if (item.tipoCalculo == 'fixo') {
         buffer.writeln('• Modalidade: Valor Fixo da Peça (${Formatters.formatCurrency(item.valorFixo)})');
