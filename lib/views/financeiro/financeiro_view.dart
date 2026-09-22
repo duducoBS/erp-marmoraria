@@ -189,7 +189,12 @@ class FinanceiroView extends StatelessWidget {
                                   onPressed: () => financeiro.alternarStatusPagamento(conta),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+                                  icon: Icon(
+                                    Icons.edit_outlined,
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? AppColors.secondaryLight
+                                        : AppColors.primary,
+                                  ),
                                   onPressed: () => _abrirDialogConta(context, financeiro, conta: conta),
                                 ),
                                 IconButton(

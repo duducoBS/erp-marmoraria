@@ -39,4 +39,28 @@ class AppColors {
   static const Color kanbanAcabamento = Color(0xFF8B5CF6); // Roxo
   static const Color kanbanMontagem = Color(0xFF0EA5E9); // Azul Claro
   static const Color kanbanConcluido = Color(0xFF10B981); // Verde
+
+  // Helpers de cores com base no tema ativo (Modo Claro vs Modo Escuro)
+  static bool isDark(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+
+  static Color surfaceVariantOf(BuildContext context) =>
+      isDark(context) ? darkSurfaceVariant : surfaceVariant;
+
+  static Color borderOf(BuildContext context) =>
+      isDark(context) ? darkBorder : border;
+
+  static Color textPrimaryOf(BuildContext context) =>
+      isDark(context) ? darkTextPrimary : textPrimary;
+
+  static Color textSecondaryOf(BuildContext context) =>
+      isDark(context) ? darkTextSecondary : textSecondary;
+
+  static Color textMutedOf(BuildContext context) =>
+      isDark(context) ? darkTextMuted : textMuted;
+
+  static Color primaryIconOf(BuildContext context) =>
+      isDark(context) ? secondaryLight : primary;
+
+  static Color priceColorOf(BuildContext context) =>
+      isDark(context) ? const Color(0xFF38BDF8) : primary;
 }

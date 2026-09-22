@@ -148,7 +148,12 @@ class _MaterialFormDialogState extends State<MaterialFormDialog> {
                     TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.secondary
+                            : AppColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: _salvar,
                       icon: const Icon(Icons.save, size: 18),
                       label: const Text('Salvar Material'),

@@ -79,7 +79,9 @@ class _ClientesViewState extends State<ClientesView> {
                 ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.secondary
+                        : AppColors.primary,
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   ),
                   onPressed: () => _abrirDialogCliente(),
@@ -155,15 +157,19 @@ class _ClientesViewState extends State<ClientesView> {
   }
 
   Widget _buildClienteCard(Cliente c, bool isDesktop) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final avatar = CircleAvatar(
       radius: isDesktop ? 24 : 20,
-      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+      backgroundColor: isDark
+          ? AppColors.secondary.withValues(alpha: 0.2)
+          : AppColors.primary.withValues(alpha: 0.1),
       child: Text(
         c.nome.isNotEmpty ? c.nome[0].toUpperCase() : 'C',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: isDesktop ? 18 : 15,
-          color: AppColors.primary,
+          color: isDark ? AppColors.secondaryLight : AppColors.primary,
         ),
       ),
     );
@@ -183,7 +189,7 @@ class _ClientesViewState extends State<ClientesView> {
             },
           ),
         IconButton(
-          icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+          icon: Icon(Icons.edit_outlined, color: isDark ? AppColors.secondaryLight : AppColors.primary),
           tooltip: 'Editar Cliente',
           onPressed: () => _abrirDialogCliente(cliente: c),
         ),
@@ -218,8 +224,15 @@ class _ClientesViewState extends State<ClientesView> {
                         ),
                         const SizedBox(width: 8),
                         Chip(
-                          label: Text(c.tipo, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                          backgroundColor: AppColors.surfaceVariant,
+                          label: Text(
+                            c.tipo,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                            ),
+                          ),
+                          backgroundColor: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                           side: BorderSide.none,
                           padding: EdgeInsets.zero,
                         ),
@@ -293,8 +306,15 @@ class _ClientesViewState extends State<ClientesView> {
                   ),
                   const SizedBox(width: 8),
                   Chip(
-                    label: Text(c.tipo, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                    backgroundColor: AppColors.surfaceVariant,
+                    label: Text(
+                      c.tipo,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                      ),
+                    ),
+                    backgroundColor: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                     side: BorderSide.none,
                     padding: EdgeInsets.zero,
                   ),

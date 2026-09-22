@@ -146,15 +146,18 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
                                   'Recusado',
                                 ].map((st) {
                                   final isSelected = provider.filtroStatus == st;
+                                  final isDark = Theme.of(context).brightness == Brightness.dark;
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 6),
                                     child: ChoiceChip(
                                       label: Text(st),
                                       selected: isSelected,
                                       onSelected: (_) => provider.setFiltroStatus(st),
-                                      selectedColor: AppColors.primary,
+                                      selectedColor: isDark ? AppColors.secondary : AppColors.primary,
                                       labelStyle: TextStyle(
-                                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary),
                                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                       ),
                                     ),
@@ -196,15 +199,18 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
                                 'Recusado',
                               ].map((st) {
                                 final isSelected = provider.filtroStatus == st;
+                                final isDark = Theme.of(context).brightness == Brightness.dark;
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 6),
                                   child: ChoiceChip(
                                     label: Text(st),
                                     selected: isSelected,
                                     onSelected: (_) => provider.setFiltroStatus(st),
-                                    selectedColor: AppColors.primary,
+                                    selectedColor: isDark ? AppColors.secondary : AppColors.primary,
                                     labelStyle: TextStyle(
-                                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary),
                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                     ),
                                   ),
@@ -262,6 +268,7 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
 
   Widget _buildOrcamentoCard(BuildContext context, Orcamento orc, OrcamentoProvider provider) {
     final isDesktop = Responsive.isDesktop(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final statusColor = _getStatusColor(orc.status);
 
@@ -298,7 +305,7 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
           onPressed: () => _enviarWhatsApp(orc),
         ),
         IconButton(
-          icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+          icon: Icon(Icons.edit_outlined, color: isDark ? AppColors.secondaryLight : AppColors.primary),
           tooltip: 'Editar na Calculadora',
           onPressed: () async {
             await provider.editarOrcamento(orc);
@@ -385,10 +392,10 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
                     const Text('Valor Total:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                     Text(
                       Formatters.formatCurrency(orc.valorTotal),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
-                        color: AppColors.primary,
+                        color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
                       ),
                     ),
                   ],
@@ -461,10 +468,10 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
                       const Text('Valor Total:', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
                       Text(
                         Formatters.formatCurrency(orc.valorTotal),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
-                          color: AppColors.primary,
+                          color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
                         ),
                       ),
                     ],

@@ -105,14 +105,27 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
             // Abas
             Container(
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkSurfaceVariant
+                    : AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkBorder
+                      : Colors.transparent,
+                ),
               ),
               child: TabBar(
                 controller: _tabController,
-                indicatorColor: AppColors.primary,
-                labelColor: AppColors.primary,
-                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.secondary
+                    : AppColors.primary,
+                labelColor: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.secondaryLight
+                    : AppColors.primary,
+                unselectedLabelColor: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.textSecondary,
                 indicatorWeight: 3,
                 onTap: (_) => setState(() {}),
                 tabs: [
@@ -153,6 +166,7 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
     }
 
     final isDesktop = Responsive.isDesktop(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListView.separated(
       itemCount: _materiais.length,
@@ -165,17 +179,17 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
           width: isDesktop ? 48 : 40,
           height: isDesktop ? 48 : 40,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: isDark ? AppColors.secondary.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(Icons.layers, color: AppColors.primary, size: isDesktop ? 24 : 20),
+          child: Icon(Icons.layers, color: isDark ? AppColors.secondaryLight : AppColors.primary, size: isDesktop ? 24 : 20),
         );
 
         final actions = Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+              icon: Icon(Icons.edit_outlined, color: isDark ? AppColors.secondaryLight : AppColors.primary),
               onPressed: () => _abrirDialogMaterial(material: mat),
             ),
             IconButton(
@@ -208,8 +222,14 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                             ),
                             const SizedBox(width: 8),
                             Chip(
-                              label: Text('${mat.tipo} • ${mat.espessura}', style: const TextStyle(fontSize: 10)),
-                              backgroundColor: AppColors.surfaceVariant,
+                              label: Text(
+                                '${mat.tipo} • ${mat.espessura}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                                ),
+                              ),
+                              backgroundColor: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                               side: BorderSide.none,
                               padding: EdgeInsets.zero,
                             ),
@@ -218,7 +238,7 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                         const SizedBox(height: 4),
                         Text(
                           'Custo: ${Formatters.formatCurrency(mat.precoM2Custo)}/m² • Margem Bruta: ${margem.toStringAsFixed(1)}%',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                          style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -228,13 +248,13 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Text('Preço de Venda / m²', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        Text('Preço de Venda / m²', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary)),
                         Text(
                           Formatters.formatCurrency(mat.precoM2Venda),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
-                            color: AppColors.success,
+                            color: isDark ? const Color(0xFF34D399) : AppColors.success,
                           ),
                         ),
                       ],
@@ -265,8 +285,14 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                       ),
                       const SizedBox(width: 8),
                       Chip(
-                        label: Text('${mat.tipo} • ${mat.espessura}', style: const TextStyle(fontSize: 10)),
-                        backgroundColor: AppColors.surfaceVariant,
+                        label: Text(
+                          '${mat.tipo} • ${mat.espessura}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                          ),
+                        ),
+                        backgroundColor: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                         side: BorderSide.none,
                         padding: EdgeInsets.zero,
                       ),
@@ -275,7 +301,7 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                   const SizedBox(height: 6),
                   Text(
                     'Custo: ${Formatters.formatCurrency(mat.precoM2Custo)}/m² • Margem: ${margem.toStringAsFixed(1)}%',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                   ),
                   const Divider(height: 16),
                   Row(
@@ -284,13 +310,13 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Preço Venda / m²', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                          Text('Preço Venda / m²', style: TextStyle(fontSize: 10, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary)),
                           Text(
                             Formatters.formatCurrency(mat.precoM2Venda),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: AppColors.success,
+                              color: isDark ? const Color(0xFF34D399) : AppColors.success,
                             ),
                           ),
                         ],
@@ -313,6 +339,7 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
     }
 
     final isDesktop = Responsive.isDesktop(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListView.separated(
       itemCount: _acabamentos.length,
@@ -334,7 +361,7 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+              icon: Icon(Icons.edit_outlined, color: isDark ? AppColors.secondaryLight : AppColors.primary),
               onPressed: () => _abrirDialogAcabamento(acabamento: acab),
             ),
             IconButton(
@@ -363,7 +390,7 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                         const SizedBox(height: 4),
                         Text(
                           'Cobrança: ${acab.tipoCobrancaLabel}',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                          style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -373,13 +400,13 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Text('Valor do Serviço', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        Text('Valor do Serviço', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary)),
                         Text(
                           Formatters.formatCurrency(acab.valor),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
-                            color: AppColors.primary,
+                            color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
                           ),
                         ),
                       ],
@@ -413,7 +440,7 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                   const SizedBox(height: 6),
                   Text(
                     'Cobrança: ${acab.tipoCobrancaLabel}',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                   ),
                   const Divider(height: 16),
                   Row(
@@ -422,13 +449,13 @@ class _CatalogoViewState extends State<CatalogoView> with SingleTickerProviderSt
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Valor do Serviço', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                          Text('Valor do Serviço', style: TextStyle(fontSize: 10, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary)),
                           Text(
                             Formatters.formatCurrency(acab.valor),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: AppColors.primary,
+                              color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
                             ),
                           ),
                         ],

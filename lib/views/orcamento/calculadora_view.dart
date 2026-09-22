@@ -111,6 +111,7 @@ class _CalculadoraViewState extends State<CalculadoraView> {
 
   Widget _buildHeaderCard(BuildContext context, OrcamentoProvider provider) {
     final isDesktop = Responsive.isDesktop(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final clienteField = Row(
       children: [
@@ -187,11 +188,11 @@ class _CalculadoraViewState extends State<CalculadoraView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.person_outline, color: AppColors.primary),
-                SizedBox(width: 8),
-                Text(
+                Icon(Icons.person_outline, color: isDark ? AppColors.secondaryLight : AppColors.primary),
+                const SizedBox(width: 8),
+                const Text(
                   'Dados do Cliente & Validade',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
@@ -231,6 +232,8 @@ class _CalculadoraViewState extends State<CalculadoraView> {
   }
 
   Widget _buildItensSection(BuildContext context, OrcamentoProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -254,8 +257,14 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                     ),
                     const SizedBox(width: 8),
                     Chip(
-                      label: Text('${provider.itensRascunho.length} itens'),
-                      backgroundColor: AppColors.surfaceVariant,
+                      label: Text(
+                        '${provider.itensRascunho.length} itens',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                        ),
+                      ),
+                      backgroundColor: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                       side: BorderSide.none,
                     ),
                   ],
@@ -304,10 +313,15 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                     leading: CircleAvatar(
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      backgroundColor: isDark
+                          ? AppColors.secondary.withValues(alpha: 0.2)
+                          : AppColors.primary.withValues(alpha: 0.1),
                       child: Text(
                         '${index + 1}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? AppColors.secondaryLight : AppColors.primary,
+                        ),
                       ),
                     ),
                     title: Row(
@@ -320,9 +334,12 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                         Chip(
                           label: Text(
                             item.materialNome ?? 'Material #${item.materialId}',
-                            style: const TextStyle(fontSize: 11),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                            ),
                           ),
-                          backgroundColor: AppColors.surfaceVariant,
+                          backgroundColor: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                           side: BorderSide.none,
                           padding: EdgeInsets.zero,
                         ),
@@ -363,10 +380,10 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                           const SizedBox(height: 2),
                           Text(
                             item.descricao,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontStyle: FontStyle.italic,
-                              color: AppColors.textSecondary,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -377,15 +394,15 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                       children: [
                         Text(
                           Formatters.formatCurrency(item.valorParcial),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: AppColors.primary,
+                            color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
                           ),
                         ),
                         const SizedBox(width: 12),
                         IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 20),
+                          icon: Icon(Icons.edit_outlined, size: 20, color: isDark ? AppColors.secondaryLight : null),
                           tooltip: 'Editar Peça',
                           onPressed: () => _abrirModalItem(context, provider, item: item, index: index),
                         ),
@@ -407,6 +424,7 @@ class _CalculadoraViewState extends State<CalculadoraView> {
 
   Widget _buildFooterSection(BuildContext context, OrcamentoProvider provider) {
     final isDesktop = Responsive.isDesktop(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final condicoesPagamentoCard = Card(
       child: Padding(
@@ -439,7 +457,7 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                       ),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: isDark ? AppColors.secondary : AppColors.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
@@ -510,9 +528,9 @@ class _CalculadoraViewState extends State<CalculadoraView> {
               const SizedBox(height: 12),
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: isDark ? AppColors.darkSurfaceVariant.withValues(alpha: 0.5) : AppColors.surfaceVariant,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Column(
@@ -530,7 +548,7 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: AppColors.primary,
+                                color: isDark ? AppColors.secondary : AppColors.primary,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -552,7 +570,7 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                             ),
                             const SizedBox(width: 8),
                             IconButton(
-                              icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                              icon: Icon(Icons.edit_outlined, size: 18, color: isDark ? AppColors.secondaryLight : AppColors.primary),
                               tooltip: 'Editar Parcela',
                               onPressed: () => _abrirModalParcela(context, provider, index: idx, parcela: p),
                             ),
@@ -672,7 +690,13 @@ class _CalculadoraViewState extends State<CalculadoraView> {
     );
 
     final resumoCard = Card(
-      color: AppColors.primary,
+      color: isDark ? const Color(0xFF1E293B) : AppColors.primary,
+      shape: isDark
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColors.darkBorder),
+            )
+          : null,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -893,7 +917,9 @@ class _CalculadoraViewState extends State<CalculadoraView> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
+                    color: Theme.of(ctx).brightness == Brightness.dark
+                        ? AppColors.darkSurfaceVariant
+                        : AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(texto, style: const TextStyle(fontSize: 12)),
@@ -1054,7 +1080,9 @@ class _CalculadoraViewState extends State<CalculadoraView> {
             ),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Theme.of(ctx).brightness == Brightness.dark
+                    ? AppColors.secondary
+                    : AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               icon: const Icon(Icons.check, size: 18),

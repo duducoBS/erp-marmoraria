@@ -145,6 +145,8 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
@@ -185,9 +187,9 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                         Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
+                            color: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
                           ),
                           padding: const EdgeInsets.all(4),
                           child: Row(
@@ -204,7 +206,9 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: _tipoCalculo == 'metro' ? AppColors.primary : Colors.transparent,
+                                      color: _tipoCalculo == 'metro'
+                                          ? (isDark ? AppColors.secondary : AppColors.primary)
+                                          : Colors.transparent,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Row(
@@ -213,7 +217,9 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                         Icon(
                                           Icons.square_foot,
                                           size: 18,
-                                          color: _tipoCalculo == 'metro' ? Colors.white : AppColors.textSecondary,
+                                          color: _tipoCalculo == 'metro'
+                                              ? Colors.white
+                                              : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
@@ -221,7 +227,9 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 13,
-                                            color: _tipoCalculo == 'metro' ? Colors.white : AppColors.textSecondary,
+                                            color: _tipoCalculo == 'metro'
+                                                ? Colors.white
+                                                : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                                           ),
                                         ),
                                       ],
@@ -251,7 +259,9 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                         Icon(
                                           Icons.sell_outlined,
                                           size: 18,
-                                          color: _tipoCalculo == 'fixo' ? Colors.white : AppColors.textSecondary,
+                                          color: _tipoCalculo == 'fixo'
+                                              ? Colors.white
+                                              : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
@@ -259,7 +269,9 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 13,
-                                            color: _tipoCalculo == 'fixo' ? Colors.white : AppColors.textSecondary,
+                                            color: _tipoCalculo == 'fixo'
+                                                ? Colors.white
+                                                : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                                           ),
                                         ),
                                       ],
@@ -548,9 +560,9 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
+                            color: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
                           ),
                           child: Column(
                             children: [
@@ -558,7 +570,7 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text('Área com Fator de Perda:', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                    Text('Área com Fator de Perda:', style: TextStyle(fontSize: 13, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary)),
                                     Text(Formatters.formatM2(_m2Total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                                   ],
                                 ),
@@ -566,10 +578,10 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text('Fórmula Aplicada:', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                    Text('Fórmula Aplicada:', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkTextMuted : AppColors.textMuted)),
                                     Text(
                                       '${Formatters.formatDecimal(_m2Total)} m² × ${Formatters.formatCurrency(Formatters.parseDouble(_precoMetroController.text))}',
-                                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace'),
+                                      style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkTextMuted : AppColors.textMuted, fontFamily: 'monospace'),
                                     ),
                                   ],
                                 ),
@@ -577,7 +589,7 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text('Modalidade de Preço:', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                    Text('Modalidade de Preço:', style: TextStyle(fontSize: 13, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary)),
                                     const Text('VALOR FIXO / FECHADO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.secondary)),
                                   ],
                                 ),
@@ -585,10 +597,10 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text('Valor Base da Peça:', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                    Text('Valor Base da Peça:', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkTextMuted : AppColors.textMuted)),
                                     Text(
                                       Formatters.formatCurrency(Formatters.parseDouble(_valorFixoController.text)),
-                                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace'),
+                                      style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkTextMuted : AppColors.textMuted, fontFamily: 'monospace'),
                                     ),
                                   ],
                                 ),
@@ -600,10 +612,10 @@ class _OrcamentoItemDialogState extends State<OrcamentoItemDialog> {
                                   const Text('VALOR PARCIAL DO ITEM:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                   Text(
                                     Formatters.formatCurrency(_valorParcial),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color: AppColors.primary,
+                                      color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
                                     ),
                                   ),
                                 ],

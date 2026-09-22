@@ -88,6 +88,7 @@ class KanbanView extends StatelessWidget {
     required List<OrdemServico> ordens,
     required ProducaoProvider provider,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = _getEtapaColor(etapa);
     final label = OrdemServico.getEtapaLabel(etapa);
 
@@ -95,9 +96,9 @@ class KanbanView extends StatelessWidget {
       width: 290,
       margin: const EdgeInsets.only(right: 14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: 0.6),
+        color: isDark ? const Color(0xFF1E293B) : AppColors.surfaceVariant.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: isDark ? const Color(0xFF334155) : AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,9 +137,9 @@ class KanbanView extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? AppColors.darkSurfaceVariant : Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
                   ),
                   child: Text(
                     '${ordens.length}',
@@ -165,7 +166,7 @@ class KanbanView extends StatelessWidget {
                       ? Center(
                           child: Text(
                             'Nenhuma ordem nesta fase',
-                            style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                            style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextMuted : AppColors.textMuted),
                           ),
                         )
                       : ListView.separated(
@@ -182,7 +183,7 @@ class KanbanView extends StatelessWidget {
                                   width: 270,
                                   padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: isDark ? AppColors.darkSurface : Colors.white,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(color: color, width: 2),
                                   ),
@@ -210,11 +211,13 @@ class KanbanView extends StatelessWidget {
   }
 
   Widget _buildOsCard(BuildContext context, OrdemServico os, ProducaoProvider provider, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -284,14 +287,14 @@ class KanbanView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   os.observacoesTecnicas!,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                  style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                 ),
               ),
             ],

@@ -87,6 +87,19 @@ class AppTheme {
           ),
         ),
       ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.surfaceVariant,
+        labelStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 11),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: AppColors.border),
+        ),
+      ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: AppColors.primary,
+        unselectedLabelColor: AppColors.textSecondary,
+        indicatorColor: AppColors.primary,
+      ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.secondary,
         foregroundColor: Colors.white,
@@ -110,6 +123,7 @@ class AppTheme {
         primary: AppColors.secondary,
         secondary: AppColors.secondaryLight,
         surface: AppColors.darkSurface,
+        surfaceContainerHighest: AppColors.darkSurfaceVariant,
         error: AppColors.danger,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
@@ -136,6 +150,19 @@ class AppTheme {
           side: const BorderSide(color: AppColors.darkBorder, width: 1),
         ),
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.darkSurfaceVariant,
+        labelStyle: const TextStyle(color: AppColors.darkTextPrimary, fontSize: 11),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: AppColors.darkBorder),
+        ),
+      ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: AppColors.secondaryLight,
+        unselectedLabelColor: AppColors.darkTextSecondary,
+        indicatorColor: AppColors.secondary,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -184,6 +211,16 @@ class AppTheme {
             fontSize: 14,
           ),
         ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.secondaryLight,
+        ),
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: AppColors.darkSurface,
+        titleTextStyle: TextStyle(color: AppColors.darkTextPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+        contentTextStyle: TextStyle(color: AppColors.darkTextPrimary, fontSize: 14),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.secondary,

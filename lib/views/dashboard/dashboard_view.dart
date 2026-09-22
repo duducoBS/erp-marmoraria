@@ -333,12 +333,17 @@ class _DashboardViewState extends State<DashboardView> {
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Row(
+                Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.view_kanban_outlined, color: AppColors.primary),
-                    SizedBox(width: 8),
-                    Text(
+                    Icon(
+                      Icons.view_kanban_outlined,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.secondaryLight
+                          : AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
                       'Ordens de Produção Ativas',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
