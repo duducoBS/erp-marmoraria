@@ -47,11 +47,33 @@ class WhatsAppService {
     buffer.writeln('');
     buffer.writeln('--------------------------------');
     buffer.writeln('💰 *VALOR TOTAL: ${Formatters.formatCurrency(orcamento.valorTotal)}*');
+    
+    if (orcamento.condicaoPagamento.isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('💳 *Condição de Pagamento:*');
+      buffer.writeln(orcamento.condicaoPagamento);
+    }
+
+    if (orcamento.parcelas.isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('📅 *Parcelamento / Vencimentos:*');
+      for (final p in orcamento.parcelas) {
+        buffer.writeln('• ${p.numero}ª Parcela: ${Formatters.formatCurrency(p.valor)} (Venc: ${Formatters.formatDate(p.vencimento)})');
+      }
+    }
+
     if (orcamento.observacoes.isNotEmpty) {
       buffer.writeln('');
       buffer.writeln('📝 *Observações:*');
       buffer.writeln(orcamento.observacoes);
     }
+
+    if (orcamento.dadosBancarios.isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('🏦 *Dados Bancários / PIX:*');
+      buffer.writeln(orcamento.dadosBancarios);
+    }
+
     buffer.writeln('');
     buffer.writeln('Ficamos à disposição para agendar a medição final ou tirar qualquer dúvida!');
     buffer.writeln('Marmoraria & Granitos.');

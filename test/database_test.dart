@@ -26,7 +26,9 @@ void main() {
               telefone TEXT,
               email TEXT,
               endereco TEXT,
-              cidade TEXT
+              bairro TEXT,
+              cidade TEXT,
+              cep TEXT
             )
           ''');
 
@@ -58,7 +60,25 @@ void main() {
               data_validade TEXT NOT NULL,
               status TEXT NOT NULL,
               valor_total REAL NOT NULL,
-              observacoes TEXT
+              observacoes TEXT,
+              condicao_pagamento TEXT DEFAULT '',
+              dados_bancarios TEXT DEFAULT '',
+              parcelas_json TEXT DEFAULT '[]'
+            )
+          ''');
+
+          await db.execute('''
+            CREATE TABLE empresa_config (
+              id INTEGER PRIMARY KEY,
+              nome TEXT NOT NULL,
+              cnpj TEXT,
+              endereco TEXT,
+              especialidades TEXT,
+              fone1 TEXT,
+              resp1 TEXT,
+              cidade_padrao TEXT,
+              dados_bancarios TEXT,
+              observacoes_padrao TEXT
             )
           ''');
 
@@ -141,6 +161,9 @@ void main() {
       'status': 'Aprovado',
       'valor_total': totalItem1 + totalItem2,
       'observacoes': 'Teste com item livre m2 e item valor fixo',
+      'condicao_pagamento': '50% entrada + 50% entrega',
+      'dados_bancarios': 'PIX: 148.374.878-23',
+      'parcelas_json': '[{"numero":1,"valor":1000.0,"vencimento":"2026-10-18"}]',
     });
     expect(orcamentoId, equals(1));
 
@@ -180,6 +203,15 @@ void main() {
       'descricao': 'Cuba esculpida com rampa oculta',
     });
 
+    // Inserção em empresa_config
+    await db.insert('empresa_config', {
+      'id': 1,
+      'nome': 'EDU MÁRMORES & GRANITOS',
+      'cnpj': '26.106.792/0001-77',
+      'cidade_padrao': 'São Paulo',
+      'dados_bancarios': 'PIX: 148.374.878-23',
+    });
+
     // Consulta com Join
     final itens = await db.rawQuery('''
       SELECT i.*, m.nome as material_nome, a.nome as acabamento_nome
@@ -198,6 +230,13 @@ void main() {
     expect(itens[1]['tipo_calculo'], equals('fixo'));
     expect(itens[1]['valor_fixo'], equals(850.0));
     expect(itens[1]['descricao'], equals('Cuba esculpida com rampa oculta'));
+
+    final orcs = await db.query('orcamentos', where: 'id = ?', whereArgs: [orcamentoId]);
+    expect(orcs.first['condicao_pagamento'], equals('50% entrada + 50% entrega'));
+    expect(orcs.first['dados_bancarios'], equals('PIX: 148.374.878-23'));
+
+    final config = await db.query('empresa_config', where: 'id = 1');
+    expect(config.first['nome'], equals('EDU MÁRMORES & GRANITOS'));
 
     await db.close();
   });

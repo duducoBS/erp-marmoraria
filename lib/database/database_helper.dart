@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -25,7 +26,7 @@ class DatabaseHelper {
       return await databaseFactory.openDatabase(
         filePath,
         options: OpenDatabaseOptions(
-          version: 3,
+          version: 4,
           onCreate: _createDB,
           onUpgrade: _onUpgrade,
           onConfigure: _onConfigure,
@@ -48,7 +49,7 @@ class DatabaseHelper {
       return await databaseFactory.openDatabase(
         dbPath,
         options: OpenDatabaseOptions(
-          version: 3,
+          version: 4,
           onCreate: _createDB,
           onUpgrade: _onUpgrade,
           onConfigure: _onConfigure,
@@ -60,7 +61,7 @@ class DatabaseHelper {
       final fullPath = p.join(dbPath, filePath);
       return await openDatabase(
         fullPath,
-        version: 3,
+        version: 4,
         onCreate: _createDB,
         onUpgrade: _onUpgrade,
         onConfigure: _onConfigure,
@@ -92,6 +93,55 @@ class DatabaseHelper {
         await db.execute("ALTER TABLE orcamento_itens ADD COLUMN descricao TEXT DEFAULT ''");
       } catch (_) {}
     }
+    if (oldVersion < 4) {
+      // Migração para versão 4: suporte a parcelas, condições de pagamento e configuração da empresa
+      try {
+        await db.execute("ALTER TABLE orcamentos ADD COLUMN condicao_pagamento TEXT DEFAULT ''");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE orcamentos ADD COLUMN dados_bancarios TEXT DEFAULT ''");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE orcamentos ADD COLUMN parcelas_json TEXT DEFAULT '[]'");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE clientes ADD COLUMN bairro TEXT DEFAULT ''");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE clientes ADD COLUMN cep TEXT DEFAULT ''");
+      } catch (_) {}
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS empresa_config (
+            id INTEGER PRIMARY KEY,
+            nome TEXT NOT NULL,
+            cnpj TEXT,
+            endereco TEXT,
+            especialidades TEXT,
+            fone1 TEXT,
+            resp1 TEXT,
+            cidade_padrao TEXT,
+            dados_bancarios TEXT,
+            observacoes_padrao TEXT
+          )
+        ''');
+        final existing = await db.query('empresa_config');
+        if (existing.isEmpty) {
+          await db.insert('empresa_config', {
+            'id': 1,
+            'nome': 'EDU MÁRMORES & GRANITOS',
+            'cnpj': '26.106.792/0001-77',
+            'endereco': 'Av. Barreira Grande, 3001 - Jd. Imperador - São Paulo - SP',
+            'especialidades': 'MÁRMORES • GRANITOS • PEDRAS DECORATIVAS\nPIAS • LAVATÓRIOS • PISOS • ESCADAS • SOLEIRAS',
+            'fone1': '(11) 94031-1110',
+            'resp1': 'Edu',
+            'cidade_padrao': 'São Paulo',
+            'dados_bancarios': 'Caixa Econômica Ag: 0242 Op: 013 CP: 7675-7 / PIX: 148.374.878-23 Cicero Eduardo dos Santos',
+            'observacoes_padrao': 'Material para instalação por conta do cliente. Medição final sujeita a conferência na obra.',
+          });
+        }
+      } catch (_) {}
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -105,7 +155,9 @@ class DatabaseHelper {
         telefone TEXT,
         email TEXT,
         endereco TEXT,
-        cidade TEXT
+        bairro TEXT,
+        cidade TEXT,
+        cep TEXT
       )
     ''');
 
@@ -141,6 +193,9 @@ class DatabaseHelper {
         status TEXT NOT NULL,
         valor_total REAL NOT NULL,
         observacoes TEXT,
+        condicao_pagamento TEXT DEFAULT '',
+        dados_bancarios TEXT DEFAULT '',
+        parcelas_json TEXT DEFAULT '[]',
         FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE RESTRICT
       )
     ''');
@@ -181,11 +236,11 @@ class DatabaseHelper {
         data_entrega_prevista TEXT,
         observacoes_tecnicas TEXT,
         FOREIGN KEY (orcamento_id) REFERENCES orcamentos(id) ON DELETE SET NULL,
-        FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL
+        FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE RESTRICT
       )
     ''');
 
-    // 7. Tabela Contas (Financeiro - Fluxo de Caixa)
+    // 7. Tabela Contas (Financeiro - Pagar / Receber)
     await db.execute('''
       CREATE TABLE IF NOT EXISTS contas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -199,11 +254,41 @@ class DatabaseHelper {
       )
     ''');
 
+    // 8. Tabela Configurações da Empresa
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS empresa_config (
+        id INTEGER PRIMARY KEY,
+        nome TEXT NOT NULL,
+        cnpj TEXT,
+        endereco TEXT,
+        especialidades TEXT,
+        fone1 TEXT,
+        resp1 TEXT,
+        cidade_padrao TEXT,
+        dados_bancarios TEXT,
+        observacoes_padrao TEXT
+      )
+    ''');
+
     // Carga de dados iniciais (Seed)
     await _seedInitialData(db);
   }
 
   Future<void> _seedInitialData(Database db) async {
+    // Seed de Configurações da Empresa
+    await db.insert('empresa_config', {
+      'id': 1,
+      'nome': 'EDU MÁRMORES & GRANITOS',
+      'cnpj': '26.106.792/0001-77',
+      'endereco': 'Av. Barreira Grande, 3001 - Jd. Imperador - São Paulo - SP',
+      'especialidades': 'MÁRMORES • GRANITOS • PEDRAS DECORATIVAS\nPIAS • LAVATÓRIOS • PISOS • ESCADAS • SOLEIRAS',
+      'fone1': '(11) 94031-1110',
+      'resp1': 'Edu',
+      'cidade_padrao': 'São Paulo',
+      'dados_bancarios': 'Caixa Econômica Ag: 0242 Op: 013 CP: 7675-7 / PIX: 148.374.878-23 Cicero Eduardo dos Santos',
+      'observacoes_padrao': 'Material para instalação por conta do cliente. Medição final sujeita a conferência na obra.',
+    });
+
     // Seed de Materiais
     for (final material in InitialData.defaultMaterials) {
       await db.insert('materiais', material.toMap());
@@ -223,6 +308,13 @@ class DatabaseHelper {
     final now = DateTime.now();
     final hojeStr = now.toIso8601String().substring(0, 10);
     final validadeStr = now.add(const Duration(days: 15)).toIso8601String().substring(0, 10);
+    final parc1Str = now.add(const Duration(days: 30)).toIso8601String().substring(0, 10);
+    final parc2Str = now.add(const Duration(days: 60)).toIso8601String().substring(0, 10);
+
+    final parcelasDemo = [
+      {'numero': 1, 'valor': 1341.30, 'vencimento': parc1Str},
+      {'numero': 2, 'valor': 1341.30, 'vencimento': parc2Str},
+    ];
 
     final orcamentoId = await db.insert('orcamentos', {
       'cliente_id': 1,
@@ -230,7 +322,10 @@ class DatabaseHelper {
       'data_validade': validadeStr,
       'status': 'Aprovado',
       'valor_total': 2682.60,
-      'observacoes': 'Bancada de cozinha com ilha em Granito Preto São Gabriel com acabamento 45 graus.',
+      'observacoes': 'Material para instalação será por conta do cliente. Bancada com ilha em Granito Preto São Gabriel.',
+      'condicao_pagamento': 'Entrada 50% e saldo na entrega',
+      'dados_bancarios': 'Caixa Econômica Ag: 0242 Op: 013 CP: 7675-7 / PIX: 148.374.878-23 Cicero Eduardo dos Santos',
+      'parcelas_json': jsonEncode(parcelasDemo),
     });
 
     // Itens do orçamento demonstrativo
@@ -243,7 +338,7 @@ class DatabaseHelper {
       'quantidade': 1,
       'm2_total': 2.112, // 1.92 * 1.10
       'perda_percentual': 10.0,
-      'acabamento_id': 1, // 45 graus (R$ 60/m)
+      'acabamento_id': 10, // 45 graus (R$ 75/m)
       'acabamento_quantidade': 3.20,
       'valor_parcial': 1353.60,
       'tipo_calculo': 'metro',
@@ -261,7 +356,7 @@ class DatabaseHelper {
       'quantidade': 1,
       'm2_total': 1.98, // 1.80 * 1.10
       'perda_percentual': 10.0,
-      'acabamento_id': 1, // 45 graus (R$ 60/m)
+      'acabamento_id': 10, // 45 graus (R$ 75/m)
       'acabamento_quantidade': 4.00,
       'valor_parcial': 1329.00,
       'tipo_calculo': 'metro',

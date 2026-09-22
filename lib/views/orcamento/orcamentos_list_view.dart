@@ -9,6 +9,8 @@ import '../../services/pdf_service.dart';
 import '../../services/whatsapp_service.dart';
 import '../../services/database_service.dart';
 import 'calculadora_view.dart';
+import 'widgets/empresa_config_dialog.dart';
+import 'widgets/importar_json_dialog.dart';
 
 class OrcamentosListView extends StatefulWidget {
   const OrcamentosListView({super.key});
@@ -65,17 +67,39 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
                     ),
                   ],
                 ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                  ),
-                  onPressed: () {
-                    provider.iniciarNovoOrcamento();
-                    setState(() => _mostrarCalculadora = true);
-                  },
-                  icon: const Icon(Icons.add_shopping_cart, size: 20),
-                  label: const Text('Novo Orçamento'),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      onPressed: () => _abrirModalImportarJson(context, provider),
+                      icon: const Icon(Icons.file_download_outlined, size: 18),
+                      label: const Text('Importar JSON'),
+                    ),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      onPressed: () => _abrirModalEmpresa(context, provider),
+                      icon: const Icon(Icons.business_outlined, size: 18),
+                      label: const Text('Empresa'),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                      ),
+                      onPressed: () {
+                        provider.iniciarNovoOrcamento();
+                        setState(() => _mostrarCalculadora = true);
+                      },
+                      icon: const Icon(Icons.add_shopping_cart, size: 20),
+                      label: const Text('Novo Orçamento'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -266,7 +290,7 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
         IconButton(
           icon: const Icon(Icons.picture_as_pdf, color: AppColors.accent),
           tooltip: 'Gerar PDF A4',
-          onPressed: () => _imprimirPdf(orc),
+          onPressed: () => _imprimirPdf(orc, provider),
         ),
         IconButton(
           icon: const Icon(Icons.send_to_mobile, color: Color(0xFF25D366)),
@@ -468,15 +492,47 @@ class _OrcamentosListViewState extends State<OrcamentosListView> {
     }
   }
 
-  Future<void> _imprimirPdf(Orcamento orc) async {
+  Future<void> _imprimirPdf(Orcamento orc, OrcamentoProvider provider) async {
     final dbService = DatabaseService();
     final cliente = await dbService.getClienteById(orc.clienteId);
     final itens = await dbService.getItensByOrcamentoId(orc.id!);
 
     if (cliente != null) {
       final orcComItens = orc.copyWith(itens: itens);
-      PdfService.gerarEVisualizarPdf(orcamento: orcComItens, cliente: cliente);
+      PdfService.gerarEVisualizarPdf(
+        orcamento: orcComItens,
+        cliente: cliente,
+        empresaConfig: provider.empresaConfig,
+      );
     }
+  }
+
+  void _abrirModalEmpresa(BuildContext context, OrcamentoProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => EmpresaConfigDialog(
+        configAtual: provider.empresaConfig,
+        onSalvar: (novaConfig) async {
+          await provider.salvarConfiguracoesEmpresa(novaConfig);
+          if (mounted) {
+            ScaffoldMessenger.of(this.context).showSnackBar(
+              const SnackBar(content: Text('Configurações da empresa salvas com sucesso!')),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  void _abrirModalImportarJson(BuildContext context, OrcamentoProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => ImportarJsonDialog(
+        onImportado: () async {
+          await provider.carregarDados();
+        },
+      ),
+    );
   }
 
   Future<void> _enviarWhatsApp(Orcamento orc) async {

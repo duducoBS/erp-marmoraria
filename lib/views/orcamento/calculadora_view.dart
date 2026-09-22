@@ -25,17 +25,23 @@ class CalculadoraView extends StatefulWidget {
 
 class _CalculadoraViewState extends State<CalculadoraView> {
   late TextEditingController _obsController;
+  late TextEditingController _condicaoPagamentoController;
+  late TextEditingController _dadosBancariosController;
 
   @override
   void initState() {
     super.initState();
     final provider = Provider.of<OrcamentoProvider>(context, listen: false);
     _obsController = TextEditingController(text: provider.observacoes);
+    _condicaoPagamentoController = TextEditingController(text: provider.condicaoPagamento);
+    _dadosBancariosController = TextEditingController(text: provider.dadosBancarios);
   }
 
   @override
   void dispose() {
     _obsController.dispose();
+    _condicaoPagamentoController.dispose();
+    _dadosBancariosController.dispose();
     super.dispose();
   }
 
@@ -401,19 +407,134 @@ class _CalculadoraViewState extends State<CalculadoraView> {
   Widget _buildFooterSection(BuildContext context, OrcamentoProvider provider) {
     final isDesktop = Responsive.isDesktop(context);
 
+    final condicoesPagamentoCard = Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.payment, color: AppColors.secondary, size: 20),
+                    SizedBox(width: 8),
+                    Text('Condições de Pagamento & Parcelas:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  ],
+                ),
+                Wrap(
+                  spacing: 6,
+                  children: [
+                    ActionChip(
+                      label: const Text('1x À Vista', style: TextStyle(fontSize: 11)),
+                      onPressed: () => provider.gerarParcelasAutomaticas(1),
+                    ),
+                    ActionChip(
+                      label: const Text('2x', style: TextStyle(fontSize: 11)),
+                      onPressed: () => provider.gerarParcelasAutomaticas(2),
+                    ),
+                    ActionChip(
+                      label: const Text('3x', style: TextStyle(fontSize: 11)),
+                      onPressed: () => provider.gerarParcelasAutomaticas(3),
+                    ),
+                    ActionChip(
+                      label: const Text('4x', style: TextStyle(fontSize: 11)),
+                      onPressed: () => provider.gerarParcelasAutomaticas(4),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _condicaoPagamentoController,
+              decoration: const InputDecoration(
+                labelText: 'Condição Comercial de Pagamento',
+                hintText: 'Ex: 50% de entrada + 50% na colocação',
+                prefixIcon: Icon(Icons.credit_card_outlined),
+              ),
+              onChanged: (val) => provider.setCondicaoPagamento(val),
+            ),
+            if (provider.parcelas.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.border),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Column(
+                  children: provider.parcelas.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final p = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${p.numero}ª Parcela',
+                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            Formatters.formatCurrency(p.valor),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.calendar_today, size: 14, color: AppColors.textSecondary),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Venc: ${Formatters.formatDate(p.vencimento)}',
+                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
+                            onPressed: () => provider.removeParcela(idx),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _dadosBancariosController,
+              decoration: const InputDecoration(
+                labelText: 'Dados Bancários & Chave PIX (Rodapé do Orçamento)',
+                hintText: 'Caixa Econômica Ag: 0242 Op: 013 CP: 7675-7 / PIX: 148.374.878-23',
+                prefixIcon: Icon(Icons.account_balance_outlined),
+              ),
+              onChanged: (val) => provider.setDadosBancarios(val),
+            ),
+          ],
+        ),
+      ),
+    );
+
     final observacoesCard = Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Observações e Condições de Pagamento:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Observações da Proposta:', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             TextFormField(
               controller: _obsController,
               maxLines: 4,
               decoration: const InputDecoration(
-                hintText: 'Ex: Entrada de 50% e saldo na entrega. Medição final sujeita a conferência na obra.',
+                hintText: 'Ex: Material para instalação por conta do cliente. Medição final sujeita a conferência na obra.',
               ),
               onChanged: (val) => provider.setObservacoes(val),
             ),
@@ -473,17 +594,25 @@ class _CalculadoraViewState extends State<CalculadoraView> {
     );
 
     if (isDesktop) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      return Column(
         children: [
-          Expanded(flex: 3, child: observacoesCard),
-          const SizedBox(width: 20),
-          Expanded(flex: 2, child: resumoCard),
+          condicoesPagamentoCard,
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: observacoesCard),
+              const SizedBox(width: 20),
+              Expanded(flex: 2, child: resumoCard),
+            ],
+          ),
         ],
       );
     } else {
       return Column(
         children: [
+          condicoesPagamentoCard,
+          const SizedBox(height: 16),
           observacoesCard,
           const SizedBox(height: 16),
           resumoCard,
@@ -536,6 +665,10 @@ class _CalculadoraViewState extends State<CalculadoraView> {
       return;
     }
 
+    provider.setObservacoes(_obsController.text.trim());
+    provider.setCondicaoPagamento(_condicaoPagamentoController.text.trim());
+    provider.setDadosBancarios(_dadosBancariosController.text.trim());
+
     final id = await provider.salvarOrcamento();
     if (id != null && context.mounted) {
       // Atualiza também os providers de produção e financeiro
@@ -567,13 +700,17 @@ class _CalculadoraViewState extends State<CalculadoraView> {
       dataValidade: Formatters.toIsoDate(provider.dataValidade),
       status: provider.status,
       valorTotal: provider.valorTotalRascunho,
-      observacoes: provider.observacoes,
+      observacoes: _obsController.text.trim(),
+      condicaoPagamento: _condicaoPagamentoController.text.trim(),
+      dadosBancarios: _dadosBancariosController.text.trim(),
+      parcelas: provider.parcelas,
       itens: provider.itensRascunho,
     );
 
     PdfService.gerarEVisualizarPdf(
       orcamento: orcamento,
       cliente: provider.selectedCliente!,
+      empresaConfig: provider.empresaConfig,
     );
   }
 
@@ -600,7 +737,10 @@ class _CalculadoraViewState extends State<CalculadoraView> {
       dataValidade: Formatters.toIsoDate(provider.dataValidade),
       status: provider.status,
       valorTotal: provider.valorTotalRascunho,
-      observacoes: provider.observacoes,
+      observacoes: _obsController.text.trim(),
+      condicaoPagamento: _condicaoPagamentoController.text.trim(),
+      dadosBancarios: _dadosBancariosController.text.trim(),
+      parcelas: provider.parcelas,
       itens: provider.itensRascunho,
     );
 
