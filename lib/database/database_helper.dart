@@ -25,7 +25,7 @@ class DatabaseHelper {
       return await databaseFactory.openDatabase(
         filePath,
         options: OpenDatabaseOptions(
-          version: 2,
+          version: 3,
           onCreate: _createDB,
           onUpgrade: _onUpgrade,
           onConfigure: _onConfigure,
@@ -48,7 +48,7 @@ class DatabaseHelper {
       return await databaseFactory.openDatabase(
         dbPath,
         options: OpenDatabaseOptions(
-          version: 2,
+          version: 3,
           onCreate: _createDB,
           onUpgrade: _onUpgrade,
           onConfigure: _onConfigure,
@@ -60,7 +60,7 @@ class DatabaseHelper {
       final fullPath = p.join(dbPath, filePath);
       return await openDatabase(
         fullPath,
-        version: 2,
+        version: 3,
         onCreate: _createDB,
         onUpgrade: _onUpgrade,
         onConfigure: _onConfigure,
@@ -84,6 +84,12 @@ class DatabaseHelper {
       } catch (_) {}
       try {
         await db.execute("ALTER TABLE orcamento_itens ADD COLUMN valor_fixo REAL DEFAULT 0");
+      } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      // Migração para versão 3: adicionar descricao detalhada em orcamento_itens
+      try {
+        await db.execute("ALTER TABLE orcamento_itens ADD COLUMN descricao TEXT DEFAULT ''");
       } catch (_) {}
     }
   }
@@ -157,6 +163,7 @@ class DatabaseHelper {
         tipo_calculo TEXT DEFAULT 'metro',
         preco_metro REAL DEFAULT 0,
         valor_fixo REAL DEFAULT 0,
+        descricao TEXT DEFAULT '',
         FOREIGN KEY (orcamento_id) REFERENCES orcamentos(id) ON DELETE CASCADE,
         FOREIGN KEY (material_id) REFERENCES materiais(id) ON DELETE RESTRICT,
         FOREIGN KEY (acabamento_id) REFERENCES acabamentos_servicos(id) ON DELETE SET NULL
@@ -242,6 +249,7 @@ class DatabaseHelper {
       'tipo_calculo': 'metro',
       'preco_metro': 550.00,
       'valor_fixo': 0.0,
+      'descricao': 'Bancada principal com furo para cuba de sobrepor e frontão 10cm',
     });
 
     await db.insert('orcamento_itens', {
@@ -259,6 +267,7 @@ class DatabaseHelper {
       'tipo_calculo': 'metro',
       'preco_metro': 550.00,
       'valor_fixo': 0.0,
+      'descricao': 'Ilha com saia 4cm em meia esquadria 45º e recorte cooktop',
     });
 
     // OS Demonstrativa

@@ -181,9 +181,13 @@ class PdfService {
                       ? '$materialLabel\n(${Formatters.formatCurrency(item.precoMetro)}/m²)'
                       : (item.tipoCalculo == 'fixo' ? '$materialLabel\n(Preço Fixo)' : materialLabel);
 
+                  final ambienteText = item.descricao.isNotEmpty
+                      ? '${item.ambiente}\n(${item.descricao})'
+                      : item.ambiente;
+
                   return pw.TableRow(
                     children: [
-                      _tableCell(item.ambiente),
+                      _tableCell(ambienteText),
                       _tableCell(materialWithPrice),
                       _tableCell(medidasStr),
                       _tableCell(m2Text),
