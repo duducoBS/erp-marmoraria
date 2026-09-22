@@ -56,6 +56,15 @@ class OrcamentoProvider extends ChangeNotifier {
     return double.parse(total.toStringAsFixed(2));
   }
 
+  double get totalParcelas {
+    final sum = _parcelas.fold(0.0, (acc, p) => acc + p.valor);
+    return double.parse(sum.toStringAsFixed(2));
+  }
+
+  double get saldoRestanteParcelas {
+    return double.parse((valorTotalRascunho - totalParcelas).toStringAsFixed(2));
+  }
+
   double get m2TotalRascunho {
     final total = _itensRascunho.fold(0.0, (sum, item) => sum + item.m2Total);
     return double.parse(total.toStringAsFixed(4));
@@ -227,8 +236,31 @@ class OrcamentoProvider extends ChangeNotifier {
   void removeParcela(int index) {
     if (index >= 0 && index < _parcelas.length) {
       _parcelas.removeAt(index);
+      for (int i = 0; i < _parcelas.length; i++) {
+        _parcelas[i] = _parcelas[i].copyWith(numero: i + 1);
+      }
       notifyListeners();
     }
+  }
+
+  void limparParcelas() {
+    _parcelas.clear();
+    notifyListeners();
+  }
+
+  void distribuirSaldoIgualmente() {
+    if (_parcelas.isEmpty) return;
+    final total = valorTotalRascunho;
+    final quantidade = _parcelas.length;
+    final valorBase = double.parse((total / quantidade).toStringAsFixed(2));
+    double somaParcelas = 0.0;
+
+    for (int i = 0; i < quantidade; i++) {
+      double valor = (i == quantidade - 1) ? double.parse((total - somaParcelas).toStringAsFixed(2)) : valorBase;
+      somaParcelas += valor;
+      _parcelas[i] = _parcelas[i].copyWith(valor: valor);
+    }
+    notifyListeners();
   }
 
   void addItemRascunho(OrcamentoItem item) {

@@ -261,5 +261,35 @@ void main() {
       expect(fromMap.parcelas[0].valor, equals(500.0));
       expect(fromMap.parcelas[1].vencimento, equals('2026-11-18'));
     });
+
+    test('OrcamentoParcela suporta edição livre com copyWith e campo de descrição', () {
+      final p1 = OrcamentoParcela(
+        numero: 1,
+        valor: 1500.0,
+        vencimento: '2026-10-10',
+        descricao: 'Entrada 50%',
+      );
+
+      expect(p1.numero, equals(1));
+      expect(p1.valor, equals(1500.0));
+      expect(p1.descricao, equals('Entrada 50%'));
+
+      final p1Editada = p1.copyWith(
+        valor: 1600.0,
+        descricao: 'Sinal de Entrada',
+        vencimento: '2026-10-15',
+      );
+
+      expect(p1Editada.numero, equals(1));
+      expect(p1Editada.valor, equals(1600.0));
+      expect(p1Editada.descricao, equals('Sinal de Entrada'));
+      expect(p1Editada.vencimento, equals('2026-10-15'));
+
+      final map = p1Editada.toMap();
+      expect(map['descricao'], equals('Sinal de Entrada'));
+      final fromMap = OrcamentoParcela.fromMap(map);
+      expect(fromMap.descricao, equals('Sinal de Entrada'));
+      expect(fromMap.valor, equals(1600.0));
+    });
   });
 }
