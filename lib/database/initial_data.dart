@@ -63,26 +63,63 @@ class InitialData {
   ];
 
   static List<AcabamentoServico> get defaultAcabamentos => [
+    // Acabamentos de Bordas Tradicionais (Padrão Marmoraria)
     AcabamentoServico(
-      nome: 'Acabamento 45º (Meia Esquadria)',
+      nome: '01 - Reto (2,0 cm)',
       tipoCobranca: 'metro_linear',
-      valor: 65.0,
+      valor: 25.0,
     ),
     AcabamentoServico(
-      nome: 'Bisotê 2cm',
+      nome: '02 - Chanfrado (2,0 cm)',
+      tipoCobranca: 'metro_linear',
+      valor: 30.0,
+    ),
+    AcabamentoServico(
+      nome: '03 - Meia Cana (2,0 cm)',
       tipoCobranca: 'metro_linear',
       valor: 35.0,
     ),
     AcabamentoServico(
-      nome: 'Boleado Duplo',
+      nome: '04 - Boleado (2,0 cm)',
       tipoCobranca: 'metro_linear',
-      valor: 45.0,
+      valor: 40.0,
     ),
     AcabamentoServico(
-      nome: 'Acabamento Reto com Polimento',
+      nome: '05 - Peito de Pombo (2,0 cm)',
       tipoCobranca: 'metro_linear',
-      valor: 25.0,
+      valor: 50.0,
     ),
+    AcabamentoServico(
+      nome: '06 - Reto Engrossado (4,0 cm)',
+      tipoCobranca: 'metro_linear',
+      valor: 55.0,
+    ),
+    AcabamentoServico(
+      nome: '07 - 1/2 Cana Engrossado (4,0 cm)',
+      tipoCobranca: 'metro_linear',
+      valor: 60.0,
+    ),
+    AcabamentoServico(
+      nome: '08 - Chanfrado Simples Engrossado (4,0 cm)',
+      tipoCobranca: 'metro_linear',
+      valor: 60.0,
+    ),
+    AcabamentoServico(
+      nome: '09 - Boleado Duplo Engrossado (4,0 cm)',
+      tipoCobranca: 'metro_linear',
+      valor: 65.0,
+    ),
+    AcabamentoServico(
+      nome: '10 - 45º com Saia (6,0 cm+)',
+      tipoCobranca: 'metro_linear',
+      valor: 75.0,
+    ),
+    AcabamentoServico(
+      nome: '11 - Outros Desenhos Moldurados',
+      tipoCobranca: 'metro_linear',
+      valor: 80.0,
+    ),
+    // Serviços Complementares de Marmoraria
     AcabamentoServico(
       nome: 'Furo para Cuba Embutida / Sobrepor',
       tipoCobranca: 'unidade',
@@ -118,7 +155,9 @@ class InitialData {
       telefone: '(11) 98765-4321',
       email: 'contato@horizonte.com.br',
       endereco: 'Av. Paulista, 1000, Sala 12',
+      bairro: 'Bela Vista',
       cidade: 'São Paulo',
+      cep: '01310-100',
     ),
     Cliente(
       nome: 'Dra. Camila Vasconcelos',
@@ -127,7 +166,9 @@ class InitialData {
       telefone: '(11) 99123-8877',
       email: 'camila.vasconcelos@email.com',
       endereco: 'Rua das Palmeiras, 450 - Apto 102',
+      bairro: 'Jardins',
       cidade: 'São Paulo',
+      cep: '01420-001',
     ),
     Cliente(
       nome: 'Eng. Ricardo Silveira',
@@ -136,7 +177,9 @@ class InitialData {
       telefone: '(11) 97333-2211',
       email: 'ricardo.obras@gmail.com',
       endereco: 'Rua dos Pinheiros, 820',
-      cidade: 'Campinas',
+      bairro: 'Pinheiros',
+      cidade: 'São Paulo',
+      cep: '05422-001',
     ),
   ];
 }

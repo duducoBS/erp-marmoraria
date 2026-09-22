@@ -7,6 +7,7 @@ import '../models/orcamento_model.dart';
 import '../models/orcamento_item_model.dart';
 import '../models/ordem_servico_model.dart';
 import '../models/conta_model.dart';
+import '../models/empresa_config_model.dart';
 
 class DatabaseService {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
@@ -118,7 +119,10 @@ class DatabaseService {
   Future<List<Orcamento>> getOrcamentos({String? search, String? status}) async {
     final db = await _db;
     String query = '''
-      SELECT o.*, c.nome AS cliente_nome, c.telefone AS cliente_telefone
+      SELECT o.*, c.nome AS cliente_nome, c.telefone AS cliente_telefone,
+             c.endereco AS cliente_endereco, c.bairro AS cliente_bairro,
+             c.cidade AS cliente_cidade, c.documento AS cliente_documento,
+             c.email AS cliente_email
       FROM orcamentos o
       LEFT JOIN clientes c ON o.cliente_id = c.id
       WHERE 1=1
@@ -146,7 +150,10 @@ class DatabaseService {
   Future<Orcamento?> getOrcamentoById(int id) async {
     final db = await _db;
     final results = await db.rawQuery('''
-      SELECT o.*, c.nome AS cliente_nome, c.telefone AS cliente_telefone
+      SELECT o.*, c.nome AS cliente_nome, c.telefone AS cliente_telefone,
+             c.endereco AS cliente_endereco, c.bairro AS cliente_bairro,
+             c.cidade AS cliente_cidade, c.documento AS cliente_documento,
+             c.email AS cliente_email
       FROM orcamentos o
       LEFT JOIN clientes c ON o.cliente_id = c.id
       WHERE o.id = ?
@@ -263,15 +270,29 @@ class DatabaseService {
 
   Future<void> _criarContaAutomatica(dynamic txn, int orcamentoId, Orcamento orcamento) async {
     final hoje = DateTime.now();
-    final vencimento = hoje.add(const Duration(days: 15)).toIso8601String().substring(0, 10);
-    await txn.insert('contas', {
-      'orcamento_id': orcamentoId,
-      'tipo': 'receber',
-      'descricao': 'Recebimento Orçamento #$orcamentoId',
-      'valor': orcamento.valorTotal,
-      'data_vencimento': vencimento,
-      'status_pagamento': 'Pendente',
-    });
+    final vencimentoPadrao = hoje.add(const Duration(days: 15)).toIso8601String().substring(0, 10);
+
+    if (orcamento.parcelas.isNotEmpty) {
+      for (final p in orcamento.parcelas) {
+        await txn.insert('contas', {
+          'orcamento_id': orcamentoId,
+          'tipo': 'receber',
+          'descricao': 'Orçamento #$orcamentoId - Parcela ${p.numero}/${orcamento.parcelas.length}',
+          'valor': p.valor,
+          'data_vencimento': p.vencimento.isNotEmpty ? p.vencimento : vencimentoPadrao,
+          'status_pagamento': 'Pendente',
+        });
+      }
+    } else {
+      await txn.insert('contas', {
+        'orcamento_id': orcamentoId,
+        'tipo': 'receber',
+        'descricao': 'Recebimento Orçamento #$orcamentoId',
+        'valor': orcamento.valorTotal,
+        'data_vencimento': vencimentoPadrao,
+        'status_pagamento': 'Pendente',
+      });
+    }
   }
 
   Future<int> deleteOrcamento(int id) async {
@@ -434,5 +455,24 @@ class DatabaseService {
       'totalAReceber': totalAReceber,
       'totalAPagar': totalAPagar,
     };
+  }
+
+  // ==================== CONFIGURAÇÃO DA EMPRESA ====================
+  Future<EmpresaConfig> getEmpresaConfig() async {
+    final db = await _db;
+    final results = await db.query('empresa_config', where: 'id = 1');
+    if (results.isNotEmpty) {
+      return EmpresaConfig.fromMap(results.first);
+    }
+    return EmpresaConfig();
+  }
+
+  Future<void> saveEmpresaConfig(EmpresaConfig config) async {
+    final db = await _db;
+    await db.insert(
+      'empresa_config',
+      config.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }

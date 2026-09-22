@@ -3,301 +3,480 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../models/orcamento_model.dart';
 import '../models/cliente_model.dart';
+import '../models/empresa_config_model.dart';
 import '../core/utils/formatters.dart';
 
 class PdfService {
   static Future<void> gerarEVisualizarPdf({
     required Orcamento orcamento,
     required Cliente cliente,
+    EmpresaConfig? empresaConfig,
   }) async {
+    final empresa = empresaConfig ?? EmpresaConfig();
     final pdf = pw.Document();
+
+    pw.ImageProvider? logoImage;
+    try {
+      logoImage = await imageFromAssetBundle('assets/images/logo_edu_transparent.png');
+    } catch (_) {}
+
+    pw.ImageProvider? acabamentosImage;
+    try {
+      acabamentosImage = await imageFromAssetBundle('assets/images/acabamentos.png');
+    } catch (_) {}
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
+        margin: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         build: (pw.Context context) {
           return [
-            // Cabeçalho da Marmoraria
+            // 1. CABEÇALHO DA EMPRESA (LAYOUT MODELO TRADICIONAL)
             pw.Container(
-              padding: const pw.EdgeInsets.only(bottom: 16),
+              padding: const pw.EdgeInsets.only(bottom: 10),
               decoration: const pw.BoxDecoration(
                 border: pw.Border(
-                  bottom: pw.BorderSide(color: PdfColors.blueGrey800, width: 2),
+                  bottom: pw.BorderSide(color: PdfColors.blueGrey800, width: 1.5),
                 ),
               ),
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        'MARMORARIA & GRANITOS',
-                        style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.blueGrey900,
-                        ),
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        'Especialistas em Mármores, Granitos, Quartzos e Superfícies Nobres',
-                        style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
-                      ),
-                      pw.Text(
-                        'Bancadas • Ilhas • Cubas Esculpidas • Soleiras • Nichos • Revestimentos',
-                        style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
-                      ),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: pw.BoxDecoration(
-                          color: PdfColors.blueGrey800,
-                          borderRadius: pw.BorderRadius.circular(4),
-                        ),
-                        child: pw.Text(
-                          'ORÇAMENTO #${orcamento.id ?? "NOVO"}',
-                          style: pw.TextStyle(
-                            color: PdfColors.white,
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 12,
+                  // Logo + Dados da Empresa
+                  pw.Expanded(
+                    flex: 6,
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      children: [
+                        if (logoImage != null)
+                          pw.Container(
+                            height: 44,
+                            width: 75,
+                            margin: const pw.EdgeInsets.only(right: 10),
+                            child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                          ),
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                empresa.nome,
+                                style: pw.TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: PdfColors.blueGrey900,
+                                ),
+                              ),
+                              pw.SizedBox(height: 2),
+                              pw.Text(
+                                'CNPJ: ${empresa.cnpj}',
+                                style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+                              ),
+                              pw.Text(
+                                empresa.endereco,
+                                style: const pw.TextStyle(fontSize: 7.5, color: PdfColors.grey700),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        'Emissão: ${Formatters.formatDate(orcamento.dataCriacao)}',
-                        style: const pw.TextStyle(fontSize: 9),
-                      ),
-                      pw.Text(
-                        'Validade: ${Formatters.formatDate(orcamento.dataValidade)}',
-                        style: const pw.TextStyle(fontSize: 9, color: PdfColors.red800),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 16),
-
-            // Dados do Cliente / Obra
-            pw.Container(
-              padding: const pw.EdgeInsets.all(10),
-              decoration: pw.BoxDecoration(
-                color: PdfColors.grey100,
-                borderRadius: pw.BorderRadius.circular(6),
-                border: pw.Border.all(color: PdfColors.grey300),
-              ),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    'DADOS DO CLIENTE & LOCAL DA OBRA',
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: 10,
-                      color: PdfColors.blueGrey800,
+                      ],
                     ),
                   ),
-                  pw.SizedBox(height: 6),
-                  pw.Row(
-                    children: [
-                      pw.Expanded(
-                        child: pw.Text('Nome/Razão: ${cliente.nome}', style: const pw.TextStyle(fontSize: 9)),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text('Documento: ${cliente.documento.isNotEmpty ? cliente.documento : "-"}', style: const pw.TextStyle(fontSize: 9)),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 3),
-                  pw.Row(
-                    children: [
-                      pw.Expanded(
-                        child: pw.Text('Telefone: ${cliente.telefone}', style: const pw.TextStyle(fontSize: 9)),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text('E-mail: ${cliente.email.isNotEmpty ? cliente.email : "-"}', style: const pw.TextStyle(fontSize: 9)),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 3),
-                  pw.Text(
-                    'Endereço: ${cliente.endereco} - ${cliente.cidade}',
-                    style: const pw.TextStyle(fontSize: 9),
+
+                  // Especialidades & Contato
+                  pw.Expanded(
+                    flex: 4,
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text(
+                          'MÁRMORES • GRANITOS • PEDRAS DECORATIVAS',
+                          style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey800),
+                          textAlign: pw.TextAlign.right,
+                        ),
+                        pw.Text(
+                          'PIAS • LAVATÓRIOS • PISOS • ESCADAS • SOLEIRAS',
+                          style: const pw.TextStyle(fontSize: 6.5, color: PdfColors.grey700),
+                          textAlign: pw.TextAlign.right,
+                        ),
+                        pw.SizedBox(height: 4),
+                        pw.Container(
+                          padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: pw.BoxDecoration(
+                            color: PdfColors.blueGrey50,
+                            borderRadius: pw.BorderRadius.circular(4),
+                            border: pw.Border.all(color: PdfColors.blueGrey200, width: 0.5),
+                          ),
+                          child: pw.Row(
+                            mainAxisSize: pw.MainAxisSize.min,
+                            children: [
+                              pw.Text(
+                                'Contato: ${empresa.fone1} • ${empresa.resp1}',
+                                style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey900),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-              ),
-            ),
-            pw.SizedBox(height: 16),
-
-            // Tabela de Itens
-            pw.Text(
-              'DISCRIMINAÇÃO DOS MATERIAIS, MEDIDAS E SERVIÇOS',
-              style: pw.TextStyle(
-                fontWeight: pw.FontWeight.bold,
-                fontSize: 10,
-                color: PdfColors.blueGrey800,
               ),
             ),
             pw.SizedBox(height: 8),
 
+            // 2. BANNER DE DATA E NÚMERO DO ORÇAMENTO
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.blueGrey50,
+                borderRadius: pw.BorderRadius.circular(4),
+                border: pw.Border.all(color: PdfColors.blueGrey200, width: 0.5),
+              ),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    '${empresa.cidadePadrao}, ${_formatarDataExtenso(orcamento.dataCriacao)}',
+                    style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.blueGrey800),
+                  ),
+                  pw.Row(
+                    children: [
+                      pw.Text(
+                        'PROPOSTA / ORÇAMENTO  ',
+                        style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey700),
+                      ),
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.blueGrey800,
+                          borderRadius: pw.BorderRadius.circular(3),
+                        ),
+                        child: pw.Text(
+                          'Nº ${orcamento.id ?? "NOVO"}',
+                          style: pw.TextStyle(
+                            fontSize: 9,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 8),
+
+            // 3. DADOS DO CLIENTE / SOLICITANTE
+            pw.Container(
+              padding: const pw.EdgeInsets.all(8),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey300, width: 0.8),
+                borderRadius: pw.BorderRadius.circular(4),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Container(
+                    width: double.infinity,
+                    padding: const pw.EdgeInsets.only(bottom: 4),
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5)),
+                    ),
+                    child: pw.Row(
+                      children: [
+                        pw.Text('NOME / RAZÃO SOCIAL: ', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey900)),
+                        pw.Expanded(
+                          child: pw.Text(cliente.nome.toUpperCase(), style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold, color: PdfColors.black)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Row(
+                    children: [
+                      pw.Expanded(
+                        flex: 5,
+                        child: pw.Text('ENDEREÇO: ${cliente.endereco.isNotEmpty ? cliente.endereco : "-"}', style: const pw.TextStyle(fontSize: 7.5)),
+                      ),
+                      pw.Expanded(
+                        flex: 3,
+                        child: pw.Text('BAIRRO: ${cliente.bairro.isNotEmpty ? cliente.bairro : "-"}', style: const pw.TextStyle(fontSize: 7.5)),
+                      ),
+                      pw.Expanded(
+                        flex: 2,
+                        child: pw.Text('CEP: ${cliente.cep.isNotEmpty ? cliente.cep : "-"}', style: const pw.TextStyle(fontSize: 7.5)),
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 3),
+                  pw.Row(
+                    children: [
+                      pw.Expanded(
+                        flex: 3,
+                        child: pw.Text('CIDADE / UF: ${cliente.cidade.isNotEmpty ? cliente.cidade : empresa.cidadePadrao}', style: const pw.TextStyle(fontSize: 7.5)),
+                      ),
+                      pw.Expanded(
+                        flex: 3,
+                        child: pw.Text('CPF / CNPJ: ${cliente.documento.isNotEmpty ? cliente.documento : "-"}', style: const pw.TextStyle(fontSize: 7.5)),
+                      ),
+                      pw.Expanded(
+                        flex: 4,
+                        child: pw.Text('TELEFONE / WHATSAPP: ${cliente.telefone.isNotEmpty ? cliente.telefone : "-"}', style: pw.TextStyle(fontSize: 7.5, fontWeight: pw.FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  if (orcamento.condicaoPagamento.isNotEmpty) ...[
+                    pw.SizedBox(height: 3),
+                    pw.Text(
+                      'CONDIÇÃO DE PAGAMENTO: ${orcamento.condicaoPagamento}',
+                      style: pw.TextStyle(fontSize: 7.5, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey800),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 8),
+
+            // 4. TABELA DE ITENS / MERCADORIAS
             pw.Table(
               border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
               children: [
                 // Header da Tabela
                 pw.TableRow(
-                  decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+                  decoration: const pw.BoxDecoration(color: PdfColors.blueGrey800),
                   children: [
-                    _tableCell('Ambiente', isHeader: true),
-                    _tableCell('Material / Rocha', isHeader: true),
-                    _tableCell('Medidas (L x C x Qtd)', isHeader: true),
-                    _tableCell('m² c/ Perda', isHeader: true),
-                    _tableCell('Acabamento / Serviços', isHeader: true),
-                    _tableCell('Total Item', isHeader: true, align: pw.TextAlign.right),
+                    _tableCell('Qtd', isHeader: true, align: pw.TextAlign.center, isLight: true),
+                    _tableCell('Descrição da Mercadoria / Ambiente / Peça', isHeader: true, isLight: true),
+                    _tableCell('Acabamento', isHeader: true, isLight: true),
+                    _tableCell('Cor / Material', isHeader: true, isLight: true),
+                    _tableCell(r'Total (R$)', isHeader: true, align: pw.TextAlign.right, isLight: true),
                   ],
                 ),
                 // Linhas de Itens
                 ...orcamento.itens.map((item) {
                   final perdaStr = '+${Formatters.formatDecimal(item.perdaPercentual, decimals: 0)}%';
                   final medidasStr = item.largura > 0 && item.comprimento > 0
-                      ? '${Formatters.formatDecimal(item.largura)} x ${Formatters.formatDecimal(item.comprimento)}m (x${item.quantidade})'
-                      : 'Qtd: ${item.quantidade}';
-                  final acabamentoStr = item.acabamentoNome != null
-                      ? '${item.acabamentoNome!} (${item.acabamentoQuantidade > 0 ? Formatters.formatDecimal(item.acabamentoQuantidade) : ""})'
-                      : 'Padrão Reto';
+                      ? '${Formatters.formatDecimal(item.largura)}m × ${Formatters.formatDecimal(item.comprimento)}m'
+                      : '';
+                  final m2Str = item.tipoCalculo == 'fixo'
+                      ? 'Preço Fixo'
+                      : '${Formatters.formatM2(item.m2Total)} ($perdaStr)';
 
-                  final m2Text = item.tipoCalculo == 'fixo'
-                      ? (item.m2Total > 0 ? '${Formatters.formatDecimal(item.m2Total)} m² (Fixo)' : 'Valor Fixo')
-                      : '${Formatters.formatDecimal(item.m2Total)} m² ($perdaStr)';
+                  final descricaoCompleta = pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(item.ambiente, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                      if (medidasStr.isNotEmpty || item.tipoCalculo != 'fixo')
+                        pw.Text('$medidasStr • Área: $m2Str', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
+                      if (item.descricao.isNotEmpty)
+                        pw.Text('• ${item.descricao}', style: pw.TextStyle(fontSize: 7, fontStyle: pw.FontStyle.italic, color: PdfColors.blueGrey800)),
+                    ],
+                  );
+
+                  final acabamentoStr = item.acabamentoNome != null
+                      ? '${item.acabamentoNome!} ${item.acabamentoQuantidade > 0 ? "(${Formatters.formatDecimal(item.acabamentoQuantidade)})" : ""}'
+                      : '01 - Padrão Reto';
 
                   final materialLabel = item.materialNome ?? 'Material #${item.materialId}';
                   final materialWithPrice = item.tipoCalculo == 'metro' && item.precoMetro > 0
                       ? '$materialLabel\n(${Formatters.formatCurrency(item.precoMetro)}/m²)'
-                      : (item.tipoCalculo == 'fixo' ? '$materialLabel\n(Preço Fixo)' : materialLabel);
-
-                  final ambienteText = item.descricao.isNotEmpty
-                      ? '${item.ambiente}\n(${item.descricao})'
-                      : item.ambiente;
+                      : materialLabel;
 
                   return pw.TableRow(
                     children: [
-                      _tableCell(ambienteText),
-                      _tableCell(materialWithPrice),
-                      _tableCell(medidasStr),
-                      _tableCell(m2Text),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                        child: pw.Text('${item.quantidade}', textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 8)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                        child: descricaoCompleta,
+                      ),
                       _tableCell(acabamentoStr),
+                      _tableCell(materialWithPrice),
                       _tableCell(Formatters.formatCurrency(item.valorParcial), align: pw.TextAlign.right),
                     ],
                   );
                 }),
               ],
             ),
-            pw.SizedBox(height: 16),
+            pw.SizedBox(height: 8),
 
-            // Totais e Observações
+            // 5. GUIA TÉCNICO ILUSTRADO DE ACABAMENTOS (BORDAS E COLUNAS)
+            if (acabamentosImage != null) ...[
+              pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.symmetric(vertical: 3),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.blueGrey100,
+                  borderRadius: pw.BorderRadius.all(pw.Radius.circular(2)),
+                ),
+                child: pw.Center(
+                  child: pw.Text(
+                    'GUIA TÉCNICO DE ACABAMENTOS DE BORDAS E COLUNAS',
+                    style: pw.TextStyle(
+                      fontSize: 7.5,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.blueGrey900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.Container(
+                height: 105,
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                child: pw.Image(acabamentosImage, fit: pw.BoxFit.contain),
+              ),
+              pw.SizedBox(height: 8),
+            ],
+
+            // 6. SEÇÃO FINANCEIRA: PARCELAMENTO, TOTAL E OBSERVAÇÕES
             pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
+                // Parcelamento
                 pw.Expanded(
                   flex: 3,
                   child: pw.Container(
-                    padding: const pw.EdgeInsets.all(10),
+                    padding: const pw.EdgeInsets.all(6),
                     decoration: pw.BoxDecoration(
-                      border: pw.Border.all(color: PdfColors.grey300),
-                      borderRadius: pw.BorderRadius.circular(6),
+                      border: pw.Border.all(color: PdfColors.grey300, width: 0.6),
+                      borderRadius: pw.BorderRadius.circular(4),
                     ),
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text(
-                          'OBSERVAÇÕES E CONDIÇÕES GERAIS:',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          orcamento.observacoes.isNotEmpty
-                              ? orcamento.observacoes
-                              : '• Medição final será confirmada na obra após instalação dos móveis.\n'
-                                '• Prazo de entrega: 10 a 15 dias úteis após conferência e aprovação do projeto executivo.\n'
-                                '• Formas de pagamento: Entrada 50% e saldo na entrega/instalação.',
-                          style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey800),
-                        ),
+                        pw.Text('PARCELAMENTO / VENCIMENTOS', style: pw.TextStyle(fontSize: 7.5, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey800)),
+                        pw.Divider(color: PdfColors.grey300, height: 6),
+                        if (orcamento.parcelas.isNotEmpty) ...[
+                          ...orcamento.parcelas.map((p) => pw.Padding(
+                            padding: const pw.EdgeInsets.symmetric(vertical: 1.5),
+                            child: pw.Row(
+                              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text('${p.numero}ª Parcela:', style: const pw.TextStyle(fontSize: 7.5)),
+                                pw.Text(Formatters.formatCurrency(p.valor), style: pw.TextStyle(fontSize: 7.5, fontWeight: pw.FontWeight.bold)),
+                                pw.Text('Venc: ${Formatters.formatDate(p.vencimento)}', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
+                              ],
+                            ),
+                          )),
+                        ] else ...[
+                          pw.Text(
+                            orcamento.condicaoPagamento.isNotEmpty ? orcamento.condicaoPagamento : 'À vista na colocação / entrega',
+                            style: const pw.TextStyle(fontSize: 7.5),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ),
-                pw.SizedBox(width: 16),
+                pw.SizedBox(width: 8),
+
+                // Valor Total e Observações
                 pw.Expanded(
-                  flex: 2,
-                  child: pw.Container(
-                    padding: const pw.EdgeInsets.all(12),
-                    decoration: pw.BoxDecoration(
-                      color: PdfColors.blueGrey50,
-                      borderRadius: pw.BorderRadius.circular(6),
-                      border: pw.Border.all(color: PdfColors.blueGrey200),
-                    ),
-                    child: pw.Column(
-                      children: [
-                        pw.Row(
-                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                          children: [
-                            pw.Text('Subtotal:', style: const pw.TextStyle(fontSize: 9)),
-                            pw.Text(Formatters.formatCurrency(orcamento.valorTotal), style: const pw.TextStyle(fontSize: 9)),
-                          ],
+                  flex: 3,
+                  child: pw.Column(
+                    children: [
+                      // Total Card
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.blueGrey900,
+                          borderRadius: pw.BorderRadius.circular(4),
                         ),
-                        pw.Divider(color: PdfColors.grey300),
-                        pw.Row(
+                        child: pw.Row(
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
-                            pw.Text(
-                              'TOTAL GERAL:',
-                              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
-                            ),
+                            pw.Text('VALOR TOTAL:', style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 10)),
                             pw.Text(
                               Formatters.formatCurrency(orcamento.valorTotal),
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 12,
-                                color: PdfColors.blueGrey900,
-                              ),
+                              style: pw.TextStyle(color: PdfColors.amber300, fontWeight: pw.FontWeight.bold, fontSize: 14),
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      pw.SizedBox(height: 6),
+
+                      // Caixa de Observações
+                      pw.Container(
+                        width: double.infinity,
+                        padding: const pw.EdgeInsets.all(6),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.red50,
+                          border: pw.Border.all(color: PdfColors.red200, width: 0.5),
+                          borderRadius: pw.BorderRadius.circular(4),
+                        ),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(
+                              orcamento.observacoes.isNotEmpty
+                                  ? orcamento.observacoes
+                                  : empresa.observacoesPadrao,
+                              style: const pw.TextStyle(fontSize: 7, color: PdfColors.red900),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            pw.SizedBox(height: 32),
+            pw.SizedBox(height: 12),
 
-            // Campos de Assinatura
+            // 7. BLOCO DE ASSINATURAS E FECHAMENTO
             pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Column(
-                  children: [
-                    pw.Container(width: 180, height: 1, color: PdfColors.black),
-                    pw.SizedBox(height: 4),
-                    pw.Text('MARMORARIA & GRANITOS', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8)),
-                    pw.Text('Responsável Técnico', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
-                  ],
+                pw.Expanded(
+                  child: pw.Column(
+                    children: [
+                      pw.Container(height: 0.8, color: PdfColors.black),
+                      pw.SizedBox(height: 2),
+                      pw.Text(empresa.nome, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
+                      pw.Text('Responsável Técnico / Vendedor', style: const pw.TextStyle(fontSize: 6.5, color: PdfColors.grey700)),
+                    ],
+                  ),
                 ),
-                pw.Column(
-                  children: [
-                    pw.Container(width: 180, height: 1, color: PdfColors.black),
-                    pw.SizedBox(height: 4),
-                    pw.Text(cliente.nome.toUpperCase(), style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8)),
-                    pw.Text('Cliente / Comprador', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
-                  ],
+                pw.SizedBox(width: 30),
+                pw.Expanded(
+                  child: pw.Column(
+                    children: [
+                      pw.Container(height: 0.8, color: PdfColors.black),
+                      pw.SizedBox(height: 2),
+                      pw.Text('DE ACORDO DO CLIENTE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5)),
+                      pw.Text('Assinatura do Solicitante / Data: ____/____/________', style: const pw.TextStyle(fontSize: 6.5, color: PdfColors.grey700)),
+                    ],
+                  ),
                 ),
               ],
+            ),
+            pw.SizedBox(height: 8),
+
+            // 8. DADOS BANCÁRIOS E CHAVE PIX NO RODAPÉ
+            pw.Container(
+              width: double.infinity,
+              padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.grey100,
+                border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+                borderRadius: pw.BorderRadius.circular(4),
+              ),
+              child: pw.Text(
+                'DADOS BANCÁRIOS & PIX: ${orcamento.dadosBancarios.isNotEmpty ? orcamento.dadosBancarios : empresa.dadosBancarios}',
+                style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey900),
+                textAlign: pw.TextAlign.center,
+              ),
             ),
           ];
         },
@@ -310,18 +489,31 @@ class PdfService {
     );
   }
 
-  static pw.Widget _tableCell(String text, {bool isHeader = false, pw.TextAlign align = pw.TextAlign.left}) {
+  static pw.Widget _tableCell(String text, {bool isHeader = false, pw.TextAlign align = pw.TextAlign.left, bool isLight = false}) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3.5),
       child: pw.Text(
         text,
         textAlign: align,
         style: pw.TextStyle(
-          fontSize: isHeader ? 8 : 8,
+          fontSize: isHeader ? 7.5 : 7.5,
           fontWeight: isHeader ? pw.FontWeight.bold : pw.FontWeight.normal,
-          color: isHeader ? PdfColors.blueGrey900 : PdfColors.black,
+          color: isLight ? PdfColors.white : PdfColors.black,
         ),
       ),
     );
+  }
+
+  static String _formatarDataExtenso(String dataIso) {
+    try {
+      final dt = DateTime.parse(dataIso);
+      final meses = [
+        'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+        'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+      ];
+      return '${dt.day} de ${meses[dt.month - 1]} de ${dt.year}';
+    } catch (_) {
+      return dataIso;
+    }
   }
 }

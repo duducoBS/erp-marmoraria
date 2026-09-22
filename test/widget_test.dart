@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:erp_marmoraria/models/orcamento_model.dart';
 import 'package:erp_marmoraria/models/orcamento_item_model.dart';
+import 'package:erp_marmoraria/models/orcamento_parcela_model.dart';
+import 'package:erp_marmoraria/models/empresa_config_model.dart';
 import 'package:erp_marmoraria/models/material_model.dart';
 import 'package:erp_marmoraria/models/cliente_model.dart';
 import 'package:erp_marmoraria/core/utils/formatters.dart';
@@ -203,6 +206,60 @@ void main() {
 
       final modificado = item.copyWith(descricao: 'Alterado para furo de torneira duplo');
       expect(modificado.descricao, equals('Alterado para furo de torneira duplo'));
+    });
+
+    test('OrcamentoParcela e EmpresaConfig suportam serialização completa', () {
+      final parcela = OrcamentoParcela(numero: 1, valor: 650.0, vencimento: '2026-10-18');
+      expect(parcela.numero, equals(1));
+      expect(parcela.valor, equals(650.0));
+      expect(parcela.vencimento, equals('2026-10-18'));
+
+      final pMap = parcela.toMap();
+      final pFromMap = OrcamentoParcela.fromMap(pMap);
+      expect(pFromMap.numero, equals(1));
+      expect(pFromMap.valor, equals(650.0));
+
+      final config = EmpresaConfig(
+        nome: 'EDU MÁRMORES',
+        cnpj: '26.106.792/0001-77',
+        fone1: '(11) 94031-1110',
+        resp1: 'Edu',
+        dadosBancarios: 'PIX: 148.374.878-23',
+      );
+      expect(config.nome, equals('EDU MÁRMORES'));
+      final cMap = config.toMap();
+      final cFromMap = EmpresaConfig.fromMap(cMap);
+      expect(cFromMap.cnpj, equals('26.106.792/0001-77'));
+      expect(cFromMap.fone1, equals('(11) 94031-1110'));
+    });
+
+    test('Orcamento suporta condicaoPagamento, dadosBancarios e parcelas', () {
+      final parcelas = [
+        OrcamentoParcela(numero: 1, valor: 500.0, vencimento: '2026-10-18'),
+        OrcamentoParcela(numero: 2, valor: 500.0, vencimento: '2026-11-18'),
+      ];
+
+      final orcamento = Orcamento(
+        clienteId: 1,
+        dataCriacao: '2026-09-22',
+        dataValidade: '2026-10-07',
+        valorTotal: 1000.0,
+        condicaoPagamento: 'Entrada 50% e saldo 30 dias',
+        dadosBancarios: 'PIX: 148.374.878-23',
+        parcelas: parcelas,
+      );
+
+      expect(orcamento.condicaoPagamento, equals('Entrada 50% e saldo 30 dias'));
+      expect(orcamento.dadosBancarios, equals('PIX: 148.374.878-23'));
+      expect(orcamento.parcelas.length, equals(2));
+
+      final map = orcamento.toMap();
+      final fromMap = Orcamento.fromMap(map);
+      expect(fromMap.condicaoPagamento, equals('Entrada 50% e saldo 30 dias'));
+      expect(fromMap.dadosBancarios, equals('PIX: 148.374.878-23'));
+      expect(fromMap.parcelas.length, equals(2));
+      expect(fromMap.parcelas[0].valor, equals(500.0));
+      expect(fromMap.parcelas[1].vencimento, equals('2026-11-18'));
     });
   });
 }
